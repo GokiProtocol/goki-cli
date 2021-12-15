@@ -1,16 +1,22 @@
 # goki-cli
 
+[![Crates.io](https://img.shields.io/crates/v/goki)](https://crates.io/crates/goki)
+[![License](https://img.shields.io/crates/l/goki)](https://github.com/GokiProtocol/goki-cli/LICENSE)
+
 ![Screenshot](images/screenshot.svg)
 
 CLI for the [Goki](https://goki.so) Smart Wallet system.
 
 ## Installation
 
-First, make sure you have Solana installed. [Follow the instructions here.](https://docs.solana.com/cli/install-solana-cli-tools)
+First, make sure you have the Solana CLI tools installed. [Follow the instructions here.](https://docs.solana.com/cli/install-solana-cli-tools)
 
 Next, install Goki via Cargo like so:
 
-```
+```bash
+cargo install goki
+
+# Or, if you want to install the latest code:
 cargo install --git https://github.com/GokiProtocol/goki-cli --locked
 ```
 

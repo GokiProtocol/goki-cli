@@ -6,6 +6,8 @@ use anchor_client::Cluster;
 use anyhow::format_err;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use solana_sdk::signature::read_keypair_file;
+use solana_sdk::signature::Signer;
 use std::fs::File;
 use std::io::copy;
 use std::io::Write;
@@ -58,19 +60,36 @@ struct ProgramInfo {
 }
 
 pub async fn process(cluster: Cluster, location: String, program_id: String) -> Result<()> {
-    // let mut program_file = NamedTempFile::new()?;
-    let mut program_file = File::create(PathBuf::from("test.so"))?;
+    let deployer_kp_string = format!(".goki/deployers/{}.json", cluster);
+    let deployer_kp_path = &PathBuf::from(deployer_kp_string.as_str());
+    if !deployer_kp_path.exists() {
+        return Err(format_err!(
+            "Deployer not found at {:?}; you may need to run `goki init`",
+            deployer_kp_path
+        ));
+    }
+
+    let mut program_file = NamedTempFile::new()?;
     fetch_program_file(&mut program_file, location.as_str()).await?;
 
     let mut buffer_kp_file = NamedTempFile::new()?;
     let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
+
+    let deployer_kp =
+        read_keypair_file(deployer_kp_path).map_err(|_| format_err!("invalid keypair"))?;
+    println!(
+        "Uploading program buffer to cluster {} with signer {}",
+        cluster,
+        deployer_kp.pubkey()
+    );
+    println!("Make sure to send enough lamports to this address for the deploy.");
 
     let program_info_output = exec_command_with_output(
         std::process::Command::new("solana")
             .arg("--url")
             .arg(&cluster.url())
             .arg("--keypair")
-            .arg(format!(".goki/deployers/{}.json", cluster))
+            .arg(deployer_kp_path)
             .arg("program")
             .arg("show")
             .arg(&program_id)
@@ -90,11 +109,10 @@ pub async fn process(cluster: Cluster, location: String, program_id: String) -> 
             .arg("--url")
             .arg(&cluster.url())
             .arg("--keypair")
-            .arg(format!(".goki/deployers/{}.json", cluster))
+            .arg(deployer_kp_path)
             .arg("program")
             .arg("write-buffer")
-            // .arg(program_file.path())
-            .arg("test.so")
+            .arg(program_file.path())
             .arg("--buffer")
             .arg(buffer_kp_file.path()),
     )?;

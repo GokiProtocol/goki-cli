@@ -1,5 +1,7 @@
 # goki-cli
 
+![Banner](images/banner.jpeg)
+
 CLI for the [Goki](https://goki.so) Smart Wallet system.
 
 ## Installation

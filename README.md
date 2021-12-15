@@ -1,6 +1,6 @@
 # goki-cli
 
-![Screenshot](images/screenshot.png)
+![Screenshot](images/screenshot.svg)
 
 CLI for the [Goki](https://goki.so) Smart Wallet system.
 

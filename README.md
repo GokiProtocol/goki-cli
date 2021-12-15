@@ -43,10 +43,10 @@ OPTIONS:
     -p, --program-id <PROGRAM_ID>    The program being upgraded. The buffer authority will be the
 ```
 
-For example, let's say you wanted to upgrade the Goki Token Signer program on mainnet. You would run the following command:
+For example, let's say you wanted to upgrade the [Goki Token Signer program](https://crates.io/crates/token-signer) on mainnet. You would run the following command:
 
 ```
-goki upload-program-buffer --cluster mainnet --location gh:token_signer:GokiProtocol/goki@0.5.2 --program-id GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH
+goki upload-program-buffer --cluster mainnet --location gh:token_signer:GokiProtocol/goki@0.5.2 --program-id NFTUJzSHuUCsMMqMRJpB7PmbsaU7Wm51acdPk2FXMLn
 ```
 
 If the command is successful, you should now have a buffer of the Goki Token Signer program at release v0.5.2 deployed somewhere on mainnet, owned by the current upgrade authority of the Goki program. The upgrade authority (ideally a Goki Smart Wallet) would then be able to upgrade their program's bytecode to the contents of that uploaded buffer.

@@ -1,0 +1,65 @@
+use anyhow::{format_err, Result};
+use colored::*;
+use solana_sdk::pubkey::Pubkey;
+use solana_sdk::signature::Signer;
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
+use std::process::Command;
+use std::process::Output;
+use std::process::Stdio;
+
+/// Generates a keypair and writes it to the [Write].
+pub fn gen_new_keypair<W: Write>(write: &mut W) -> Result<Pubkey> {
+    let new_keypair = solana_sdk::signer::keypair::Keypair::new();
+    let new_key = new_keypair.pubkey();
+    solana_sdk::signer::keypair::write_keypair(&new_keypair, write)
+        .map_err(|_| format_err!("could not generate keypair"))?;
+    Ok(new_key)
+}
+
+/// Generates a keypair at a [Path].
+pub fn gen_keypair_file(path: &Path) -> Result<Pubkey> {
+    let mut file = File::create(path)?;
+    let pubkey = gen_new_keypair(&mut file)?;
+    Ok(pubkey)
+}
+
+pub fn print_header(header: &'static str) {
+    println!();
+    println!("{}", "===================================".bold());
+    println!();
+    println!("    {}", header.bold());
+    println!();
+    println!("{}", "===================================".bold());
+    println!();
+}
+
+pub fn exec_command_unhandled(command: &mut Command) -> Result<Output> {
+    command
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .output()
+        .map_err(|e| format_err!("Error deploying: {}", e.to_string()))
+}
+
+pub fn exec_command(command: &mut Command) -> Result<Output> {
+    println!("Running command: {:?}", command);
+    let exit = exec_command_unhandled(command)?;
+    if !exit.status.success() {
+        std::process::exit(exit.status.code().unwrap_or(1));
+    }
+    Ok(exit)
+}
+
+/// Executes a command, returning the captured stdout.
+pub fn exec_command_with_output(command: &mut Command) -> Result<String> {
+    let exit = command
+        .stderr(Stdio::inherit())
+        .output()
+        .map_err(|e| format_err!("Error deploying: {}", e.to_string()))?;
+    if !exit.status.success() {
+        std::process::exit(exit.status.code().unwrap_or(1));
+    }
+    Ok(String::from_utf8(exit.stdout)?)
+}

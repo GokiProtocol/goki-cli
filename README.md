@@ -43,13 +43,13 @@ OPTIONS:
     -p, --program-id <PROGRAM_ID>    The program being upgraded. The buffer authority will be the
 ```
 
-For example, let's say you wanted to upgrade the Goki Smart Wallet program on mainnet. You would run the following command:
+For example, let's say you wanted to upgrade the Goki Token Signer program on mainnet. You would run the following command:
 
 ```
-goki upload-program-buffer --cluster mainnet --location gh:smart_wallet:GokiProtocol/goki@0.5.2 --program-id GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH
+goki upload-program-buffer --cluster mainnet --location gh:token_signer:GokiProtocol/goki@0.5.2 --program-id GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH
 ```
 
-If the command is successful, you should now have a buffer of the Goki Smart Wallet program at release v0.5.2 deployed somewhere on mainnet.
+If the command is successful, you should now have a buffer of the Goki Token Signer program at release v0.5.2 deployed somewhere on mainnet, owned by the current upgrade authority of the Goki program. The upgrade authority (ideally a Goki Smart Wallet) would then be able to upgrade their program's bytecode to the contents of that uploaded buffer.
 
 If you don't have enough SOL in your wallet, the command will fail and tell you what key you should be sending SOL to.
 

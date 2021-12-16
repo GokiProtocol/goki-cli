@@ -10,10 +10,20 @@ pub enum SubCommand {
     Init,
     #[clap(about = "Shows information about the Goki workspace.")]
     Show,
+    #[clap(about = "Requests an airdrop of SOL from the Solana network.")]
+    Airdrop {
+        #[clap(short, long)]
+        #[clap(help = "Cluster to request from.")]
+        #[clap(default_value = "devnet")]
+        cluster: Cluster,
+        #[clap(help = "Airdrop request amount in SOL.")]
+        #[clap(default_value = "1")]
+        amount: String,
+    },
     #[clap(about = "Uploads a Solana program buffer.")]
     UploadProgramBuffer {
         #[clap(short, long)]
-        #[clap(help = "Cluster to deploy to. Defaults to devnet.")]
+        #[clap(help = "Cluster to deploy to.")]
         #[clap(default_value = "devnet")]
         cluster: Cluster,
         #[clap(short, long)]
@@ -44,6 +54,9 @@ async fn main() -> Result<()> {
         }
         SubCommand::Show => {
             goki::subcommands::show::process()?;
+        }
+        SubCommand::Airdrop { cluster, amount } => {
+            goki::subcommands::airdrop::process(cluster, amount.as_str())?;
         }
         SubCommand::UploadProgramBuffer {
             cluster,

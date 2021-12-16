@@ -23,8 +23,17 @@ pub fn process() -> Result<()> {
             gen_keypair_file(keypair_path)?
         };
         result.push((cluster.clone(), key));
+    }
 
+    println!("{}", "Deployers:".bold());
+    for (cluster, key) in result.iter() {
+        println!("{}: {}", cluster, key);
+    }
+
+    for (cluster, _key) in result.iter() {
         if cluster.clone() != Cluster::Mainnet {
+            let path_string = format!(".goki/deployers/{}.json", cluster);
+            let keypair_path = Path::new(path_string.as_str());
             exec_command(
                 std::process::Command::new("solana")
                     .arg("--url")
@@ -35,11 +44,6 @@ pub fn process() -> Result<()> {
                     .arg("1"),
             )?;
         }
-    }
-
-    println!("{}", "Deployers:".bold());
-    for (cluster, key) in result.iter() {
-        println!("{}: {}", cluster, key);
     }
 
     println!("Goki initialized! Please add the .goki/ directory to your gitignore.");

@@ -8,6 +8,8 @@ use clap::Parser;
 pub enum SubCommand {
     #[clap(about = "Initializes a new Goki workspace.")]
     Init,
+    #[clap(about = "Shows information about the Goki workspace.")]
+    Show,
     #[clap(about = "Uploads a Solana program buffer.")]
     UploadProgramBuffer {
         #[clap(short, long)]
@@ -39,6 +41,9 @@ async fn main() -> Result<()> {
     match opts.command {
         SubCommand::Init => {
             goki::subcommands::init::process()?;
+        }
+        SubCommand::Show => {
+            goki::subcommands::show::process()?;
         }
         SubCommand::UploadProgramBuffer {
             cluster,

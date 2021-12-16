@@ -1,8 +1,12 @@
 use anyhow::{format_err, Result};
 use colored::*;
+use data_encoding::HEXLOWER;
+use sha2::{Digest, Sha256};
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::Signer;
 use std::fs::File;
+use std::io;
+use std::io::Read;
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
@@ -62,4 +66,11 @@ pub fn exec_command_with_output(command: &mut Command) -> Result<String> {
         std::process::exit(exit.status.code().unwrap_or(1));
     }
     Ok(String::from_utf8(exit.stdout)?)
+}
+
+pub fn sha256_digest<R: Read>(reader: &mut R) -> Result<(u64, String)> {
+    let mut hasher = Sha256::new();
+    let num_bytes = io::copy(reader, &mut hasher)?;
+    let hash_bytes = hasher.finalize();
+    Ok((num_bytes, HEXLOWER.encode(hash_bytes.as_ref())))
 }

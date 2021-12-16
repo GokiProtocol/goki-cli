@@ -2,14 +2,17 @@ use crate::utils::exec_command;
 use crate::utils::exec_command_with_output;
 use crate::utils::gen_new_keypair;
 use crate::utils::print_header;
+use crate::utils::sha256_digest;
 use anchor_client::Cluster;
 use anyhow::format_err;
 use anyhow::Result;
+use colored::*;
 use serde::{Deserialize, Serialize};
 use solana_sdk::signature::read_keypair_file;
 use solana_sdk::signature::Signer;
 use std::fs::File;
 use std::io::copy;
+use std::io::BufReader;
 use std::io::Write;
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
@@ -70,7 +73,15 @@ pub async fn process(cluster: Cluster, location: String, program_id: String) -> 
     }
 
     let mut program_file = NamedTempFile::new()?;
+
     fetch_program_file(&mut program_file, location.as_str()).await?;
+
+    let input = File::open(program_file.path())?;
+    let mut reader = BufReader::new(input);
+    let (program_file_size, program_file_digest) = sha256_digest(&mut reader)?;
+    println!("Program buffer downloaded.");
+    println!("Size (bytes): {}", program_file_size.to_string().green());
+    println!("SHA256: {}", program_file_digest.green());
 
     let mut buffer_kp_file = NamedTempFile::new()?;
     let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
@@ -131,6 +142,10 @@ pub async fn process(cluster: Cluster, location: String, program_id: String) -> 
             .arg("--new-buffer-authority")
             .arg(&program_info.authority),
     )?;
+
+    println!("Buffer upload complete.");
+    println!("Buffer: {}", buffer_key.to_string().green());
+    println!("SHA256: {}", program_file_digest.green());
 
     Ok(())
 }

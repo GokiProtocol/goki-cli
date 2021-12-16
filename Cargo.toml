@@ -27,7 +27,7 @@ strum = "0.23.0"
 strum_macros = "0.21"
 tempfile = "3.2.0"
 toml = "0.5.8"
-tokio = { version = "1.14.0", features = ["full"] }
+tokio = { version = "1.15.0", features = ["full"] }
 
 [[bin]]
 name = "goki"

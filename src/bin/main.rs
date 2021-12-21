@@ -35,6 +35,26 @@ pub enum SubCommand {
         )]
         program_id: String,
     },
+    #[clap(about = "Deploys or upgrades a program using a local signer.")]
+    DeployLocal {
+        #[clap(short, long)]
+        #[clap(help = "Cluster to deploy to.")]
+        #[clap(default_value = "devnet")]
+        cluster: Cluster,
+        #[clap(short, long)]
+        #[clap(
+            help = "The keypair of the upgrade authority. If not provided, the deployer keypair will be used if not on mainnet."
+        )]
+        keypair: Option<String>,
+        #[clap(short, long)]
+        #[clap(help = "The public key of the program buffer.")]
+        buffer: String,
+        #[clap(short, long)]
+        #[clap(
+            help = "The program being upgraded. If deploying for the first time, you may specify a keypair."
+        )]
+        program_id: String,
+    },
 }
 
 #[derive(Debug, clap::Parser)]
@@ -65,6 +85,14 @@ async fn main() -> Result<()> {
         } => {
             goki::subcommands::upload_program_buffer::process(cluster, location, program_id)
                 .await?;
+        }
+        SubCommand::DeployLocal {
+            cluster,
+            keypair,
+            buffer,
+            program_id,
+        } => {
+            goki::subcommands::deploy_local::process(cluster, keypair, buffer, program_id)?;
         }
     }
 

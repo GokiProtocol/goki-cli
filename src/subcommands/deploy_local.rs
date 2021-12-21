@@ -4,40 +4,28 @@ use colored::*;
 use solana_sdk::pubkey::Pubkey;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use tempfile::NamedTempFile;
 
+use crate::location::fetch_program_file;
 use crate::solana_cmd;
 use crate::utils::{gen_new_keypair, get_deployer_kp_path, sha256_digest};
-use crate::{location::fetch_program_file, utils::exec_command};
 
 pub async fn process(
     cluster: Cluster,
-    keypair_provided: Option<String>,
+    upgrade_authority_kp_provided: Option<String>,
     location_or_buffer: String,
     program_id: String,
 ) -> Result<()> {
-    let upgrade_authority_kp: String = match keypair_provided {
+    let upgrade_authority_kp: String = match upgrade_authority_kp_provided {
         Some(kp_path) => kp_path,
         None => {
             if cluster == Cluster::Mainnet {
                 return Err(format_err!(
-                    "Must specify the upgrade authority keypair on mainnet."
+                    "Must specify the --upgrade authority keypair on mainnet."
                 ));
             }
-            if !PathBuf::from(".goki/deployers/").exists() {
-                return Err(format_err!(".goki/deployers/ does not exist"));
-            }
-            let path_string = format!(".goki/deployers/{}.json", cluster);
-            let deployer_kp = Path::new(path_string.as_str());
-            if !deployer_kp.exists() {
-                return Err(format_err!(
-                    "{} keypair not found at path {}",
-                    cluster,
-                    deployer_kp.display()
-                ));
-            }
+            let deployer_kp = get_deployer_kp_path(&cluster)?;
             deployer_kp.display().to_string()
         }
     };
@@ -45,6 +33,8 @@ pub async fn process(
     let buffer_key: Pubkey = match Pubkey::from_str(location_or_buffer.as_str()) {
         Ok(buffer) => buffer,
         Err(_) => {
+            let deployer_kp_path = get_deployer_kp_path(&cluster)?;
+
             let mut program_file = NamedTempFile::new()?;
             fetch_program_file(&mut program_file, location_or_buffer.as_str()).await?;
 
@@ -58,7 +48,6 @@ pub async fn process(
             let mut buffer_kp_file = NamedTempFile::new()?;
             let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
 
-            let deployer_kp_path = get_deployer_kp_path(&cluster)?;
             solana_cmd::write_buffer(
                 &cluster,
                 &deployer_kp_path,
@@ -70,21 +59,7 @@ pub async fn process(
         }
     };
 
-    exec_command(
-        std::process::Command::new("solana")
-            .arg("--url")
-            .arg(cluster.url())
-            .arg("--keypair")
-            .arg(upgrade_authority_kp.clone())
-            .arg("program")
-            .arg("deploy")
-            .arg("--buffer")
-            .arg(buffer_key.to_string())
-            .arg("--program-id")
-            .arg(program_id)
-            .arg("--upgrade-authority")
-            .arg(upgrade_authority_kp),
-    )?;
+    solana_cmd::upgrade(&cluster, &upgrade_authority_kp, &buffer_key, &program_id)?;
 
     Ok(())
 }

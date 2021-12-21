@@ -46,7 +46,7 @@ pub enum SubCommand {
         #[clap(
             help = "The keypair of the upgrade authority. If not provided, the deployer keypair will be used if not on mainnet."
         )]
-        keypair: Option<String>,
+        upgrade_authority_keypair: Option<String>,
         #[clap(short, long)]
         #[clap(
             help = "The path to the Solana program bytecode. If a public key is provided, this will use an already uploaded program buffer."
@@ -101,12 +101,17 @@ async fn main() -> Result<()> {
         }
         SubCommand::DeployLocal {
             cluster,
-            keypair,
+            upgrade_authority_keypair,
             location,
             program_id,
         } => {
-            goki::subcommands::deploy_local::process(cluster, keypair, location, program_id)
-                .await?;
+            goki::subcommands::deploy_local::process(
+                cluster,
+                upgrade_authority_keypair,
+                location,
+                program_id,
+            )
+            .await?;
         }
         SubCommand::Pull { location, out } => {
             goki::subcommands::pull::process(location, &out).await?;

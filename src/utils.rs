@@ -78,6 +78,11 @@ pub fn sha256_digest<R: Read>(reader: &mut R) -> Result<(u64, String)> {
 }
 
 pub fn get_deployer_kp_path(cluster: &Cluster) -> Result<PathBuf> {
+    if !PathBuf::from(".goki/deployers/").exists() {
+        return Err(format_err!(
+            ".goki/deployers/ does not exist; you may need to run `goki init`"
+        ));
+    }
     let deployer_kp_string = format!(".goki/deployers/{}.json", cluster);
     let deployer_kp_path = &PathBuf::from(deployer_kp_string.as_str());
     if !deployer_kp_path.exists() {

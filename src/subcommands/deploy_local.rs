@@ -18,10 +18,6 @@ pub async fn process(
     location_or_buffer: String,
     program_id: String,
 ) -> Result<()> {
-    if cluster == Cluster::Mainnet {
-        return Err(format_err!("cannot request an airdrop from mainnet"));
-    }
-
     let upgrade_authority_kp: String = match keypair_provided {
         Some(kp_path) => kp_path,
         None => {

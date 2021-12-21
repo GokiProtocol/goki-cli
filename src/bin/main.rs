@@ -3,6 +3,7 @@
 use anchor_client::Cluster;
 use anyhow::Result;
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Debug, clap::Subcommand)]
 pub enum SubCommand {
@@ -57,6 +58,16 @@ pub enum SubCommand {
         )]
         program_id: String,
     },
+    #[clap(about = "Pulls a binary from a location.")]
+    Pull {
+        #[clap(short, long)]
+        #[clap(help = "The path to the Solana program buffer.")]
+        location: String,
+        #[clap(short, long)]
+        #[clap(help = "Output path.")]
+        #[clap(default_value = "program.so")]
+        out: PathBuf,
+    },
 }
 
 #[derive(Debug, clap::Parser)]
@@ -96,6 +107,9 @@ async fn main() -> Result<()> {
         } => {
             goki::subcommands::deploy_local::process(cluster, keypair, location, program_id)
                 .await?;
+        }
+        SubCommand::Pull { location, out } => {
+            goki::subcommands::pull::process(location, &out).await?;
         }
     }
 

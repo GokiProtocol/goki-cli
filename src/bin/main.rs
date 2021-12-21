@@ -36,8 +36,28 @@ pub enum SubCommand {
         )]
         program_id: String,
     },
-    #[clap(about = "Deploys or upgrades a program using a local signer.")]
-    DeployLocal {
+    #[clap(about = "Deploys a program for the first time.")]
+    Deploy {
+        #[clap(short, long)]
+        #[clap(help = "Cluster to deploy to.")]
+        #[clap(default_value = "devnet")]
+        cluster: Cluster,
+        #[clap(short, long)]
+        #[clap(
+            help = "The public key of the upgrade authority. If not provided, the deployer key will be used if not on mainnet."
+        )]
+        upgrade_authority: Option<String>,
+        #[clap(short, long)]
+        #[clap(
+            help = "The path to the Solana program bytecode. If a public key is provided, this will use an already uploaded program buffer."
+        )]
+        location: String,
+        #[clap(short, long)]
+        #[clap(help = "The path to the keypair of the program being deployed.")]
+        program_kp: PathBuf,
+    },
+    #[clap(about = "Upgrades a program using a local signer.")]
+    UpgradeLocal {
         #[clap(short, long)]
         #[clap(help = "Cluster to deploy to.")]
         #[clap(default_value = "devnet")]
@@ -99,13 +119,22 @@ async fn main() -> Result<()> {
             goki::subcommands::upload_program_buffer::process(cluster, location, program_id)
                 .await?;
         }
-        SubCommand::DeployLocal {
+        SubCommand::Deploy {
+            cluster,
+            upgrade_authority,
+            location,
+            program_kp,
+        } => {
+            goki::subcommands::deploy::process(cluster, upgrade_authority, location, &program_kp)
+                .await?;
+        }
+        SubCommand::UpgradeLocal {
             cluster,
             upgrade_authority_keypair,
             location,
             program_id,
         } => {
-            goki::subcommands::deploy_local::process(
+            goki::subcommands::upgrade_local::process(
                 cluster,
                 upgrade_authority_keypair,
                 location,

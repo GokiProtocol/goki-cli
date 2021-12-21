@@ -82,7 +82,7 @@ pub async fn process(
             .arg(buffer_key.to_string())
             .arg("--program-id")
             .arg(program_id)
-            .arg("--upgrade_authority")
+            .arg("--upgrade-authority")
             .arg(upgrade_authority_kp),
     )?;
 

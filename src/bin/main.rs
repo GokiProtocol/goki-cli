@@ -47,8 +47,10 @@ pub enum SubCommand {
         )]
         keypair: Option<String>,
         #[clap(short, long)]
-        #[clap(help = "The public key of the program buffer.")]
-        buffer: String,
+        #[clap(
+            help = "The path to the Solana program bytecode. If a public key is provided, this will use an already uploaded program buffer."
+        )]
+        location: String,
         #[clap(short, long)]
         #[clap(
             help = "The program being upgraded. If deploying for the first time, you may specify a keypair."
@@ -89,10 +91,11 @@ async fn main() -> Result<()> {
         SubCommand::DeployLocal {
             cluster,
             keypair,
-            buffer,
+            location,
             program_id,
         } => {
-            goki::subcommands::deploy_local::process(cluster, keypair, buffer, program_id)?;
+            goki::subcommands::deploy_local::process(cluster, keypair, location, program_id)
+                .await?;
         }
     }
 

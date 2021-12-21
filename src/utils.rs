@@ -1,3 +1,4 @@
+use anchor_client::Cluster;
 use anyhow::{format_err, Result};
 use colored::*;
 use data_encoding::HEXLOWER;
@@ -9,6 +10,7 @@ use std::io;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 use std::process::Output;
 use std::process::Stdio;
@@ -73,4 +75,16 @@ pub fn sha256_digest<R: Read>(reader: &mut R) -> Result<(u64, String)> {
     let num_bytes = io::copy(reader, &mut hasher)?;
     let hash_bytes = hasher.finalize();
     Ok((num_bytes, HEXLOWER.encode(hash_bytes.as_ref())))
+}
+
+pub fn get_deployer_kp_path(cluster: &Cluster) -> Result<PathBuf> {
+    let deployer_kp_string = format!(".goki/deployers/{}.json", cluster);
+    let deployer_kp_path = &PathBuf::from(deployer_kp_string.as_str());
+    if !deployer_kp_path.exists() {
+        return Err(format_err!(
+            "Deployer not found at {:?}; you may need to run `goki init`",
+            deployer_kp_path
+        ));
+    }
+    Ok(deployer_kp_path.clone())
 }

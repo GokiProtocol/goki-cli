@@ -3,15 +3,36 @@ use anyhow::Result;
 use solana_sdk::pubkey::Pubkey;
 use std::{path::Path, process::Output};
 
-use crate::utils::exec_command;
+use crate::utils::{exec_command, get_deployer_kp_path};
+
+/// Writes a program buffer.
+pub fn set_buffer_authority(
+    cluster: &Cluster,
+    buffer_key: &Pubkey,
+    authority: &str,
+) -> Result<Output> {
+    let deployer_kp = get_deployer_kp_path(cluster)?;
+    exec_command(
+        std::process::Command::new("solana")
+            .arg("--url")
+            .arg(&cluster.url())
+            .arg("--keypair")
+            .arg(deployer_kp)
+            .arg("program")
+            .arg("set-buffer-authority")
+            .arg(buffer_key.to_string())
+            .arg("--new-buffer-authority")
+            .arg(authority),
+    )
+}
 
 /// Writes a program buffer.
 pub fn write_buffer(
     cluster: &Cluster,
-    deployer_kp: &Path,
     program_file: &Path,
     buffer_kp_file: &Path,
 ) -> Result<Output> {
+    let deployer_kp = get_deployer_kp_path(cluster)?;
     exec_command(
         std::process::Command::new("solana")
             .arg("--url")

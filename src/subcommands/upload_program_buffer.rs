@@ -1,6 +1,5 @@
 use crate::location::fetch_program_file;
 use crate::solana_cmd;
-use crate::utils::exec_command;
 use crate::utils::exec_command_with_output;
 use crate::utils::gen_new_keypair;
 use crate::utils::get_deployer_kp_path;
@@ -67,27 +66,11 @@ pub async fn process(cluster: Cluster, location: String, program_id: String) -> 
 
     print_header("Writing buffer");
 
-    solana_cmd::write_buffer(
-        &cluster,
-        &deployer_kp_path,
-        program_file.path(),
-        buffer_kp_file.path(),
-    )?;
+    solana_cmd::write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
 
     print_header("Setting buffer authority");
 
-    exec_command(
-        std::process::Command::new("solana")
-            .arg("--url")
-            .arg(&cluster.url())
-            .arg("--keypair")
-            .arg(format!(".goki/deployers/{}.json", cluster))
-            .arg("program")
-            .arg("set-buffer-authority")
-            .arg(buffer_key.to_string())
-            .arg("--new-buffer-authority")
-            .arg(&program_info.authority),
-    )?;
+    solana_cmd::set_buffer_authority(&cluster, &buffer_key, &program_info.authority)?;
 
     println!("Buffer upload complete.");
     println!("Buffer: {}", buffer_key.to_string().green());

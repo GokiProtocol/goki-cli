@@ -33,8 +33,6 @@ pub async fn process(
     let buffer_key: Pubkey = match Pubkey::from_str(location_or_buffer.as_str()) {
         Ok(buffer) => buffer,
         Err(_) => {
-            let deployer_kp_path = get_deployer_kp_path(&cluster)?;
-
             let mut program_file = NamedTempFile::new()?;
             fetch_program_file(&mut program_file, location_or_buffer.as_str()).await?;
 
@@ -48,12 +46,7 @@ pub async fn process(
             let mut buffer_kp_file = NamedTempFile::new()?;
             let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
 
-            solana_cmd::write_buffer(
-                &cluster,
-                &deployer_kp_path,
-                program_file.path(),
-                buffer_kp_file.path(),
-            )?;
+            solana_cmd::write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
 
             buffer_key
         }

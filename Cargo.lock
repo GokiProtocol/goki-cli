@@ -1261,15 +1261,12 @@ dependencies = [
  "data-encoding",
  "heck",
  "reqwest",
- "semver",
  "serde",
  "serde_json",
  "serde_with",
  "sha2 0.10.0",
  "shellexpand",
  "solana-sdk",
- "strum",
- "strum_macros",
  "tempfile",
  "tokio",
  "toml",
@@ -3269,24 +3266,6 @@ name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
-
-[[package]]
-name = "strum"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cae14b91c7d11c9a851d3fbc80a963198998c2a64eec840477fa92d8ce9b70bb"
-
-[[package]]
-name = "strum_macros"
-version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d06aaeeee809dbc59eb4556183dd927df67db1540de5be8d3ec0b6636358a5ec"
-dependencies = [
- "heck",
- "proc-macro2 1.0.34",
- "quote 1.0.10",
- "syn 1.0.82",
-]
 
 [[package]]
 name = "subtle"

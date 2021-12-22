@@ -47,6 +47,7 @@ pub async fn process(
             let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
 
             solana_cmd::write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
+            solana_cmd::set_buffer_authority(&cluster, &buffer_key, upgrade_authority_kp.as_str())?;
 
             buffer_key
         }

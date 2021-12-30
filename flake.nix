@@ -21,14 +21,14 @@
         pkgs = import nixpkgs { inherit system; }
           // saber-overlay.packages.${system};
 
-        osSpecificPackages = (pkgs.lib.optionals pkgs.stdenv.isDarwin
-          (with pkgs.darwin.apple_sdk.frameworks;
+        osSpecificPackages = with pkgs;
+          (lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks;
             ([ IOKit Security CoreFoundation AppKit ]
-              ++ (pkgs.lib.optionals pkgs.stdenv.isAarch64 [ System ]))))
-          ++ (pkgs.lib.optionals pkgs.stdenv.isLinux [ pkgs.libudev ]);
+              ++ (lib.optionals stdenv.isAarch64 [ System ]))))
+          ++ (lib.optionals stdenv.isLinux [ libudev ]);
 
         goki-cli = import ./default.nix {
-          inherit (pkgs) solana-cli rustPlatform;
+          inherit (pkgs) solana-cli rustPlatform pkgconfig openssl;
           inherit osSpecificPackages;
           src = gitignore.lib.gitignoreSource ./.;
         };

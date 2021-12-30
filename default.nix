@@ -1,4 +1,4 @@
-{ src, rustPlatform, solana-cli, osSpecificPackages }:
+{ src, rustPlatform, solana-cli, osSpecificPackages, pkgconfig, openssl }:
 
 rustPlatform.buildRustPackage rec {
   pname = "goki-cli";
@@ -9,5 +9,6 @@ rustPlatform.buildRustPackage rec {
   verifyCargoDeps = true;
   strictDeps = true;
 
-  buildInputs = osSpecificPackages ++ [ solana-cli ];
+  nativeBuildInputs = [ pkgconfig ];
+  buildInputs = osSpecificPackages ++ [ openssl solana-cli ];
 }

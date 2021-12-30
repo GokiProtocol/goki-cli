@@ -2,91 +2,109 @@
 
 use anchor_client::Cluster;
 use anyhow::Result;
+use clap::ArgSettings::NextLineHelp;
 use clap::Parser;
 use std::path::PathBuf;
 
+const LOCATION_HELP: &str =
+    "The location of the Solana program binary. This can be in one of the following formats:
+
+- path, for example `./path/to/program.so`
+- URL, for example `https://github.com/GokiProtocol/goki/releases/download/v0.5.2/smart_wallet.so`
+- GitHub artifact, for example `gh:smart_wallet:GokiProtocol/goki@0.5.2`
+";
+
 #[derive(Debug, clap::Subcommand)]
 pub enum SubCommand {
-    #[clap(about = "Initializes a new Goki workspace.")]
+    /// Initializes a new Goki workspace.
     Init,
-    #[clap(about = "Shows information about the Goki workspace.")]
+    /// Shows information about the Goki workspace.
     Show,
-    #[clap(about = "Requests an airdrop of SOL from the Solana network.")]
+    /// Requests an airdrop of SOL from the Solana network.
     Airdrop {
+        /// Cluster to request from.
         #[clap(short, long)]
-        #[clap(help = "Cluster to request from.")]
+        #[clap(possible_value("devnet"), possible_value("testnet"))]
         #[clap(default_value = "devnet")]
         cluster: Cluster,
-        #[clap(help = "Airdrop request amount in SOL.")]
+
+        /// Airdrop request amount in SOL.
+        #[clap(short, long)]
         #[clap(default_value = "1")]
         amount: String,
     },
-    #[clap(about = "Uploads a Solana program buffer.")]
+    /// Uploads a Solana program buffer.
     UploadProgramBuffer {
+        /// Cluster to deploy to.
         #[clap(short, long)]
-        #[clap(help = "Cluster to deploy to.")]
         #[clap(default_value = "devnet")]
         cluster: Cluster,
+
         #[clap(short, long)]
-        #[clap(help = "The path to the Solana program buffer.")]
+        #[clap(help = LOCATION_HELP)]
+        #[clap(setting = NextLineHelp)]
         location: String,
+
+        /// The program being upgraded.
+        ///
+        /// The buffer authority will be set to the program's current upgrade authority.
         #[clap(short, long)]
-        #[clap(
-            help = "The program being upgraded. The buffer authority will be the program's current upgrade authority."
-        )]
         program_id: String,
     },
-    #[clap(about = "Deploys a program for the first time.")]
+
+    /// Deploys a program for the first time.
     Deploy {
+        /// Cluster to deploy to.
         #[clap(short, long)]
-        #[clap(help = "Cluster to deploy to.")]
         #[clap(default_value = "devnet")]
         cluster: Cluster,
+
+        /// The public key of the upgrade authority. If not provided, the deployer key will be used if not on mainnet.
         #[clap(short, long)]
-        #[clap(
-            help = "The public key of the upgrade authority. If not provided, the deployer key will be used if not on mainnet."
-        )]
         upgrade_authority: Option<String>,
+
         #[clap(short, long)]
-        #[clap(
-            help = "The path to the Solana program bytecode. If a public key is provided, this will use an already uploaded program buffer."
-        )]
+        #[clap(help = LOCATION_HELP)]
+        #[clap(setting = NextLineHelp)]
         location: String,
+
+        /// The path to the keypair of the program being deployed.
         #[clap(short, long)]
-        #[clap(help = "The path to the keypair of the program being deployed.")]
         program_kp: PathBuf,
     },
-    #[clap(about = "Upgrades a program using a local signer.")]
+    /// Upgrades a program using a local signer.
     UpgradeLocal {
+        /// Cluster to deploy to.
         #[clap(short, long)]
-        #[clap(help = "Cluster to deploy to.")]
         #[clap(default_value = "devnet")]
         cluster: Cluster,
+
+        /// The keypair of the upgrade authority.
+        ///
+        /// If not provided, the deployer keypair will be used if not on mainnet.
         #[clap(short, long)]
-        #[clap(
-            help = "The keypair of the upgrade authority. If not provided, the deployer keypair will be used if not on mainnet."
-        )]
         upgrade_authority_keypair: Option<String>,
+
+        /// The path to the Solana program bytecode. If a public key is provided, this will use an already uploaded program buffer.
         #[clap(short, long)]
-        #[clap(
-            help = "The path to the Solana program bytecode. If a public key is provided, this will use an already uploaded program buffer."
-        )]
         location: String,
+
+        /// The program being upgraded.
         #[clap(short, long)]
-        #[clap(
-            help = "The program being upgraded. If deploying for the first time, you may specify a keypair."
-        )]
         program_id: String,
     },
-    #[clap(about = "Pulls a binary from a location.")]
+    /// Pulls a binary from a location.
     Pull {
         #[clap(short, long)]
-        #[clap(help = "The path to the Solana program buffer.")]
+        #[clap(help = LOCATION_HELP)]
+        #[clap(setting = NextLineHelp)]
         location: String,
+
+        /// Output path of the program binary.
+        ///
+        /// If not specified, the program binary will not be written.
         #[clap(short, long)]
-        #[clap(help = "Output path.")]
-        #[clap(default_value = "program.so")]
-        out: PathBuf,
+        out: Option<PathBuf>,
     },
 }
 
@@ -94,7 +112,7 @@ pub enum SubCommand {
 #[clap(about, version, author)]
 pub struct Opts {
     #[clap(subcommand)]
-    command: SubCommand,
+    pub command: SubCommand,
 }
 
 #[tokio::main]
@@ -143,7 +161,7 @@ async fn main() -> Result<()> {
             .await?;
         }
         SubCommand::Pull { location, out } => {
-            goki::subcommands::pull::process(location, &out).await?;
+            goki::subcommands::pull::process(&location, out).await?;
         }
     }
 

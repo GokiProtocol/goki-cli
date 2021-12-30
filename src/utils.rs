@@ -1,19 +1,19 @@
+//! Utility functions.
+
 use anchor_client::Cluster;
 use anyhow::{format_err, Result};
 use colored::*;
 use data_encoding::HEXLOWER;
+use itertools::Itertools;
 use sha2::{Digest, Sha256};
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::Signer;
-use std::fs::File;
-use std::io;
-use std::io::Read;
-use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Command;
-use std::process::Output;
-use std::process::Stdio;
+use std::{
+    fs::File,
+    io::{self, Read, Write},
+    path::{Path, PathBuf},
+    process::{Command, Output, Stdio},
+};
 
 /// Generates a keypair and writes it to the [Write].
 pub fn gen_new_keypair<W: Write>(write: &mut W) -> Result<Pubkey> {
@@ -49,8 +49,28 @@ pub fn exec_command_unhandled(command: &mut Command) -> Result<Output> {
         .map_err(|e| format_err!("Error deploying: {}", e.to_string()))
 }
 
+fn rem_first_and_last(value: &str) -> &str {
+    let mut chars = value.chars();
+    chars.next();
+    chars.next_back();
+    chars.as_str()
+}
+
+fn fmt_command(command: &Command) -> String {
+    let cmd_str_raw = format!("{:?}", command).split("\" \"").join(" ");
+    rem_first_and_last(&cmd_str_raw).to_string()
+}
+
+fn print_command(command: &Command) {
+    println!(
+        "{} {}",
+        "=> Running command:".bold(),
+        fmt_command(command).yellow()
+    );
+}
+
 pub fn exec_command(command: &mut Command) -> Result<Output> {
-    println!("Running command: {:?}", command);
+    print_command(command);
     let exit = exec_command_unhandled(command)?;
     if !exit.status.success() {
         std::process::exit(exit.status.code().unwrap_or(1));
@@ -60,6 +80,7 @@ pub fn exec_command(command: &mut Command) -> Result<Output> {
 
 /// Executes a command, returning the captured stdout.
 pub fn exec_command_with_output(command: &mut Command) -> Result<String> {
+    print_command(command);
     let exit = command
         .stderr(Stdio::inherit())
         .output()

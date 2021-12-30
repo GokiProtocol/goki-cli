@@ -6,6 +6,7 @@ pkgs.mkShell {
       cargo-deps
       cargo-watch
       cargo-udeps
+      cargo-outdated
 
       # sdk
       (yarn.override { nodejs = nodejs-14_x; })

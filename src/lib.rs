@@ -1,3 +1,5 @@
+//! Goki command line tools.
+
 #[macro_use]
 pub mod macros;
 

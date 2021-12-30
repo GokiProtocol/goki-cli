@@ -20,6 +20,23 @@ cargo install goki
 cargo install --git https://github.com/GokiProtocol/goki-cli --locked
 ```
 
+### As a Nix Flake
+
+A Cachix build is maintained at the `goki` repository.
+
+Import Goki by adding the following to your `flake.nix`:
+
+```nix
+inputs.gitignore = {
+    url = "github:GokiProtocol/goki-cli";
+    inputs.nixpkgs.follows = "nixpkgs";
+    # If you are using the Saber overlay:
+    inputs.saber-overlay.follows = "saber-overlay";
+};
+```
+
+The Goki CLI is exposed as the `defaultPackage` and on `packages.goki-cli`.
+
 ## Usage
 
 ### Setup

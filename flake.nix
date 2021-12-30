@@ -28,8 +28,9 @@
           ++ (lib.optionals stdenv.isLinux [ libudev ]);
 
         goki-cli = import ./default.nix {
-          inherit (pkgs) solana-cli rustPlatform pkgconfig openssl;
+          inherit (pkgs) lib solana-cli rustPlatform pkgconfig openssl;
           inherit osSpecificPackages;
+          version = "0.1.4";
           src = gitignore.lib.gitignoreSource ./.;
         };
       in {

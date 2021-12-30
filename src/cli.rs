@@ -13,6 +13,7 @@ const LOCATION_HELP: &str =
 - path, for example `./path/to/program.so`
 - URL, for example `https://github.com/GokiProtocol/goki/releases/download/v0.5.2/smart_wallet.so`
 - GitHub artifact, for example `gh:smart_wallet:GokiProtocol/goki@0.5.2`
+- Solana Program Registry artifact, for example `spr:QuarryProtocol/quarry_mine`
 ";
 
 #[derive(Debug, clap::Subcommand)]
@@ -96,7 +97,6 @@ pub enum SubCommand {
     },
     /// Pulls a binary from a location.
     Pull {
-        #[clap(short, long)]
         #[clap(help = LOCATION_HELP)]
         #[clap(setting = NextLineHelp)]
         location: String,

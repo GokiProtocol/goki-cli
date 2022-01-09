@@ -31,7 +31,6 @@ pub enum SubCommand {
         cluster: Cluster,
 
         /// Airdrop request amount in SOL.
-        #[clap(short, long)]
         #[clap(default_value = "1")]
         amount: String,
     },

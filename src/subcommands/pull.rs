@@ -1,11 +1,12 @@
-use crate::location::fetch_program_file;
-use crate::utils::sha256_digest;
 use anyhow::Result;
 use colored::*;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
+
+use crate::location::fetch_program_file;
+use crate::utils::sha256_digest;
 
 pub async fn process(location: &str, out: Option<PathBuf>) -> Result<()> {
     let mut temp_out_file = NamedTempFile::new()?;

@@ -1,11 +1,12 @@
 //! Goki entrypoint
 
-use crate::subcommands;
 use anchor_client::Cluster;
 use anyhow::Result;
 use clap::ArgSettings::NextLineHelp;
 use clap::Parser;
 use std::path::PathBuf;
+
+use crate::subcommands;
 
 const LOCATION_HELP: &str =
     "The location of the Solana program binary. This can be in one of the following formats:

@@ -13,7 +13,10 @@ use std::{
     io::{self, Read, Write},
     path::{Path, PathBuf},
     process::{Command, Output, Stdio},
+    string::String,
 };
+
+use crate::config::Config;
 
 /// Generates a keypair and writes it to the [Write].
 pub fn gen_new_keypair<W: Write>(write: &mut W) -> Result<Pubkey> {
@@ -113,4 +116,16 @@ pub fn get_deployer_kp_path(cluster: &Cluster) -> Result<PathBuf> {
         ));
     }
     Ok(deployer_kp_path.clone())
+}
+
+pub fn get_cluster_url(cluster: &Cluster) -> Result<String> {
+    let cfg = Config::discover()?.expect("Goki.toml not found; please run `goki init`");
+    Ok(match cluster {
+        Cluster::Debug => cfg.rpc_endpoints.debug.clone(),
+        Cluster::Testnet => cfg.rpc_endpoints.testnet.clone(),
+        Cluster::Mainnet => cfg.rpc_endpoints.mainnet.clone(),
+        Cluster::Devnet => cfg.rpc_endpoints.devnet.clone(),
+        Cluster::Localnet => cfg.rpc_endpoints.localnet.clone(),
+        _ => panic!("cluster type not supported"),
+    })
 }

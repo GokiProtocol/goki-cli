@@ -4,6 +4,7 @@
 pub mod macros;
 
 pub mod cli;
+pub mod config;
 pub mod location;
 pub mod solana_cmd;
 pub mod subcommands;

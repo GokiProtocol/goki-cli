@@ -1,11 +1,23 @@
-use crate::utils::{exec_command, gen_keypair_file};
 use anchor_client::Cluster;
 use anyhow::{format_err, Result};
 use colored::*;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file, signer::Signer};
+use std::fs::File;
+use std::io::Write;
 use std::{fs, path::Path};
 
+use crate::config::Config;
+use crate::utils::{exec_command, gen_keypair_file, get_cluster_url};
+
 pub fn process() -> Result<()> {
+    if Config::discover()?.is_some() {
+        println!("Goki.toml already exists in workspace")
+    } else {
+        let cfg = Config::default();
+        let mut file = File::create("Goki.toml")?;
+        file.write_all(cfg.to_string().as_bytes())?;
+    }
+
     fs::create_dir_all(".goki/deployers/")?;
 
     let mut result: Vec<(Cluster, Pubkey)> = vec![];
@@ -37,7 +49,7 @@ pub fn process() -> Result<()> {
             exec_command(
                 std::process::Command::new("solana")
                     .arg("--url")
-                    .arg(cluster.url())
+                    .arg(get_cluster_url(cluster)?)
                     .arg("--keypair")
                     .arg(keypair_path)
                     .arg("airdrop")

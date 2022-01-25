@@ -1,5 +1,3 @@
-use crate::config::*;
-use crate::utils::{exec_command, gen_keypair_file, get_cluster_url};
 use anchor_client::Cluster;
 use anyhow::{format_err, Result};
 use colored::*;
@@ -7,6 +5,9 @@ use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file, signer::Signer};
 use std::fs::File;
 use std::io::Write;
 use std::{fs, path::Path};
+
+use crate::config::Config;
+use crate::utils::{exec_command, gen_keypair_file, get_cluster_url};
 
 pub fn process() -> Result<()> {
     if Config::discover()?.is_some() {

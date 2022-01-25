@@ -1,11 +1,3 @@
-use crate::location::fetch_program_file;
-use crate::solana_cmd;
-use crate::utils::exec_command_with_output;
-use crate::utils::gen_new_keypair;
-use crate::utils::get_cluster_url;
-use crate::utils::get_deployer_kp_path;
-use crate::utils::print_header;
-use crate::utils::sha256_digest;
 use anchor_client::Cluster;
 use anyhow::format_err;
 use anyhow::Result;
@@ -16,6 +8,15 @@ use solana_sdk::signature::Signer;
 use std::fs::File;
 use std::io::BufReader;
 use tempfile::NamedTempFile;
+
+use crate::location::fetch_program_file;
+use crate::solana_cmd;
+use crate::utils::exec_command_with_output;
+use crate::utils::gen_new_keypair;
+use crate::utils::get_cluster_url;
+use crate::utils::get_deployer_kp_path;
+use crate::utils::print_header;
+use crate::utils::sha256_digest;
 
 #[derive(Serialize, Deserialize)]
 struct ProgramInfo {

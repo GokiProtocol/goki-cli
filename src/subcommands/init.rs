@@ -1,11 +1,16 @@
+use crate::config::*;
 use crate::utils::{exec_command, gen_keypair_file};
 use anchor_client::Cluster;
-use anyhow::{format_err, Result};
+use anyhow::{anyhow, format_err, Result};
 use colored::*;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file, signer::Signer};
 use std::{fs, path::Path};
 
 pub fn process() -> Result<()> {
+    if Config::discover()?.is_some() {
+        return Err(anyhow!("Workspace already initialized"));
+    }
+
     fs::create_dir_all(".goki/deployers/")?;
 
     let mut result: Vec<(Cluster, Pubkey)> = vec![];

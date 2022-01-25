@@ -31,10 +31,22 @@ impl<T> std::convert::AsRef<T> for WithPath<T> {
     }
 }
 
+impl<T> std::ops::Deref for WithPath<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl<T> std::ops::DerefMut for WithPath<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub rpc_endpoints: RPC,
-    pub wss_endpoints: WSS,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -54,27 +66,6 @@ impl Default for RPC {
             testnet: "https://api.testnet.solana.com".to_string(),
             localnet: "http://127.0.0.1:8899".to_string(),
             debug: "http://34.90.18.145:8899".to_string(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct WSS {
-    pub mainnet: String,
-    pub devnet: String,
-    pub testnet: String,
-    pub localnet: String,
-    pub debug: String,
-}
-
-impl Default for WSS {
-    fn default() -> Self {
-        Self {
-            devnet: "wss://api.devnet.solana.com".to_string(),
-            testnet: "wss://api.testnet.solana.com".to_string(),
-            mainnet: "wss://api.mainnet-beta.solana.com".to_string(),
-            localnet: "ws://127.0.0.1:9000".to_string(),
-            debug: "ws://34.90.18.145:9000".to_string(),
         }
     }
 }
@@ -115,7 +106,6 @@ impl Config {
 #[derive(Debug, Serialize, Deserialize)]
 struct _Config {
     rpc_endpoints: Option<RPC>,
-    wss_endpoints: Option<WSS>,
 }
 
 impl ToString for Config {
@@ -123,9 +113,6 @@ impl ToString for Config {
         let cfg = _Config {
             rpc_endpoints: Some(RPC {
                 ..self.rpc_endpoints.clone()
-            }),
-            wss_endpoints: Some(WSS {
-                ..self.wss_endpoints.clone()
             }),
         };
 
@@ -141,7 +128,6 @@ impl FromStr for Config {
             .map_err(|e| anyhow::format_err!("Unable to deserialize config: {}", e.to_string()))?;
         Ok(Config {
             rpc_endpoints: cfg.rpc_endpoints.unwrap_or_default(),
-            wss_endpoints: cfg.wss_endpoints.unwrap_or_default(),
         })
     }
 }

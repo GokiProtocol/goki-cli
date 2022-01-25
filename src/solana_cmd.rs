@@ -3,7 +3,7 @@ use anyhow::Result;
 use solana_sdk::pubkey::Pubkey;
 use std::{path::Path, process::Output};
 
-use crate::utils::{exec_command, get_deployer_kp_path};
+use crate::utils::{exec_command, get_cluster_url, get_deployer_kp_path};
 
 /// Sets the buffer authority of a buffer.
 pub fn set_buffer_authority(
@@ -15,7 +15,7 @@ pub fn set_buffer_authority(
     exec_command(
         std::process::Command::new("solana")
             .arg("--url")
-            .arg(&cluster.url())
+            .arg(get_cluster_url(cluster)?)
             .arg("--keypair")
             .arg(deployer_kp)
             .arg("program")
@@ -36,7 +36,7 @@ pub fn set_upgrade_authority(
     exec_command(
         std::process::Command::new("solana")
             .arg("--url")
-            .arg(&cluster.url())
+            .arg(get_cluster_url(cluster)?)
             .arg("--keypair")
             .arg(current_authority)
             .arg("program")
@@ -57,7 +57,7 @@ pub fn write_buffer(
     exec_command(
         std::process::Command::new("solana")
             .arg("--url")
-            .arg(&cluster.url())
+            .arg(get_cluster_url(cluster)?)
             .arg("--keypair")
             .arg(deployer_kp)
             .arg("program")
@@ -74,7 +74,7 @@ pub fn deploy(cluster: &Cluster, program_file: &Path, program_kp_path: &Path) ->
     exec_command(
         std::process::Command::new("solana")
             .arg("--url")
-            .arg(&cluster.url())
+            .arg(get_cluster_url(cluster)?)
             .arg("--keypair")
             .arg(&deployer_kp)
             .arg("program")
@@ -95,7 +95,7 @@ pub fn upgrade(
     exec_command(
         std::process::Command::new("solana")
             .arg("--url")
-            .arg(&cluster.url())
+            .arg(get_cluster_url(cluster)?)
             .arg("--keypair")
             .arg(upgrade_authority_kp)
             .arg("program")

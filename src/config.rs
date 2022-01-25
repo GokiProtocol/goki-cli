@@ -83,6 +83,10 @@ impl Config {
 
         Ok(cfg)
     }
+
+    pub(crate) fn as_bytes(&self) -> &[u8] {
+        todo!()
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

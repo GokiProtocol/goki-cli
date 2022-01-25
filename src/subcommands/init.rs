@@ -4,14 +4,20 @@ use anchor_client::Cluster;
 use anyhow::{anyhow, format_err, Result};
 use colored::*;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file, signer::Signer};
+use std::fs::File;
+use std::io::Write;
 use std::{fs, path::Path};
 
 pub fn process() -> Result<()> {
     if Config::discover()?.is_some() {
-        return Err(anyhow!("Workspace already initialized"));
+        return Err(anyhow!("Goki already initialized."));
     }
 
     fs::create_dir_all(".goki/deployers/")?;
+
+    let toml = Config::default();
+    let mut file = File::create("Goki.toml")?;
+    file.write_all(toml.as_bytes())?;
 
     let mut result: Vec<(Cluster, Pubkey)> = vec![];
 

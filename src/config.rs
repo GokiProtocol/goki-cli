@@ -33,8 +33,8 @@ impl<T> std::convert::AsRef<T> for WithPath<T> {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
-    pub rpc_configs: RPC,
-    pub wss_configs: WSS,
+    pub rpc_endpoints: RPC,
+    pub wss_endpoints: WSS,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -114,18 +114,18 @@ impl Config {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct _Config {
-    rpc_configs: Option<RPC>,
-    wss_configs: Option<WSS>,
+    rpc_endpoints: Option<RPC>,
+    wss_endpoints: Option<WSS>,
 }
 
 impl ToString for Config {
     fn to_string(&self) -> String {
         let cfg = _Config {
-            rpc_configs: Some(RPC {
-                ..self.rpc_configs.clone()
+            rpc_endpoints: Some(RPC {
+                ..self.rpc_endpoints.clone()
             }),
-            wss_configs: Some(WSS {
-                ..self.wss_configs.clone()
+            wss_endpoints: Some(WSS {
+                ..self.wss_endpoints.clone()
             }),
         };
 
@@ -140,8 +140,8 @@ impl FromStr for Config {
         let cfg: _Config = toml::from_str(s)
             .map_err(|e| anyhow::format_err!("Unable to deserialize config: {}", e.to_string()))?;
         Ok(Config {
-            rpc_configs: cfg.rpc_configs.unwrap_or_default(),
-            wss_configs: cfg.wss_configs.unwrap_or_default(),
+            rpc_endpoints: cfg.rpc_endpoints.unwrap_or_default(),
+            wss_endpoints: cfg.wss_endpoints.unwrap_or_default(),
         })
     }
 }

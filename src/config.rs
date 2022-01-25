@@ -4,6 +4,7 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::string::ToString;
 
 pub struct WithPath<T> {
     inner: T,
@@ -33,13 +34,16 @@ impl<T> std::convert::AsRef<T> for WithPath<T> {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub rpc_configs: RPC,
+    pub wss_configs: WSS,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct RPC {
     pub mainnet: String,
     pub devnet: String,
     pub testnet: String,
+    pub localnet: String,
+    pub debug: String,
 }
 
 impl Default for RPC {
@@ -48,6 +52,29 @@ impl Default for RPC {
             mainnet: "https://api.mainnet-beta.solana.com".to_string(),
             devnet: "https://api.devnet.solana.com".to_string(),
             testnet: "https://api.testnet.solana.com".to_string(),
+            localnet: "http://127.0.0.1:8899".to_string(),
+            debug: "http://34.90.18.145:8899".to_string(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct WSS {
+    pub mainnet: String,
+    pub devnet: String,
+    pub testnet: String,
+    pub localnet: String,
+    pub debug: String,
+}
+
+impl Default for WSS {
+    fn default() -> Self {
+        Self {
+            devnet: "wss://api.devnet.solana.com".to_string(),
+            testnet: "wss://api.testnet.solana.com".to_string(),
+            mainnet: "wss://api.mainnet-beta.solana.com".to_string(),
+            localnet: "ws://127.0.0.1:9000".to_string(),
+            debug: "ws://34.90.18.145:9000".to_string(),
         }
     }
 }
@@ -83,15 +110,27 @@ impl Config {
 
         Ok(cfg)
     }
-
-    pub(crate) fn as_bytes(&self) -> &[u8] {
-        todo!()
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct _Config {
     rpc_configs: Option<RPC>,
+    wss_configs: Option<WSS>,
+}
+
+impl ToString for Config {
+    fn to_string(&self) -> String {
+        let cfg = _Config {
+            rpc_configs: Some(RPC {
+                ..self.rpc_configs.clone()
+            }),
+            wss_configs: Some(WSS {
+                ..self.wss_configs.clone()
+            }),
+        };
+
+        toml::to_string(&cfg).expect("Must be well formed")
+    }
 }
 
 impl FromStr for Config {
@@ -102,6 +141,7 @@ impl FromStr for Config {
             .map_err(|e| anyhow::format_err!("Unable to deserialize config: {}", e.to_string()))?;
         Ok(Config {
             rpc_configs: cfg.rpc_configs.unwrap_or_default(),
+            wss_configs: cfg.wss_configs.unwrap_or_default(),
         })
     }
 }

@@ -15,9 +15,9 @@ pub fn process() -> Result<()> {
 
     fs::create_dir_all(".goki/deployers/")?;
 
-    let toml = Config::default();
+    let cfg = Config::default();
     let mut file = File::create("Goki.toml")?;
-    file.write_all(toml.as_bytes())?;
+    file.write_all(cfg.to_string().as_bytes())?;
 
     let mut result: Vec<(Cluster, Pubkey)> = vec![];
 

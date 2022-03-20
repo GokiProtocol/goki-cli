@@ -7,11 +7,12 @@ use std::io::BufReader;
 use std::str::FromStr;
 use tempfile::NamedTempFile;
 
-use crate::location::fetch_program_file;
 use crate::solana_cmd;
-use crate::utils::{gen_new_keypair, get_deployer_kp_path, sha256_digest};
+use crate::utils::{gen_new_keypair, sha256_digest};
+use crate::{location::fetch_program_file, workspace::Workspace};
 
 pub async fn process(
+    workspace: &Workspace,
     cluster: Cluster,
     upgrade_authority_kp_provided: Option<String>,
     location_or_buffer: String,
@@ -25,7 +26,7 @@ pub async fn process(
                     "Must specify the --upgrade authority keypair on mainnet."
                 ));
             }
-            let deployer_kp = get_deployer_kp_path(&cluster)?;
+            let deployer_kp = workspace.get_deployer_kp_path_if_exists(&cluster)?;
             deployer_kp.display().to_string()
         }
     };
@@ -46,8 +47,18 @@ pub async fn process(
             let mut buffer_kp_file = NamedTempFile::new()?;
             let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
 
-            solana_cmd::write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
-            solana_cmd::set_buffer_authority(&cluster, &buffer_key, upgrade_authority_kp.as_str())?;
+            solana_cmd::write_buffer(
+                workspace,
+                &cluster,
+                program_file.path(),
+                buffer_kp_file.path(),
+            )?;
+            solana_cmd::set_buffer_authority(
+                workspace,
+                &cluster,
+                &buffer_key,
+                upgrade_authority_kp.as_str(),
+            )?;
 
             buffer_key
         }

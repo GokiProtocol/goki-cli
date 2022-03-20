@@ -9,17 +9,18 @@ use std::path::Path;
 use std::str::FromStr;
 use tempfile::NamedTempFile;
 
-use crate::location::fetch_program_file;
 use crate::solana_cmd;
-use crate::utils::{get_deployer_kp_path, sha256_digest};
+use crate::utils::sha256_digest;
+use crate::{location::fetch_program_file, workspace::Workspace};
 
 pub async fn process(
+    workspace: &Workspace,
     cluster: Cluster,
     upgrade_authority_provided: Option<String>,
     location_or_buffer: String,
     program_kp_path: &Path,
 ) -> Result<()> {
-    let deployer_kp_path = get_deployer_kp_path(&cluster)?;
+    let deployer_kp_path = workspace.get_deployer_kp_path_if_exists(&cluster)?;
     let program_kp = solana_sdk::signature::read_keypair_file(program_kp_path)
         .map_err(|e| format_err!("could not open program kp path: {}", e))?;
 
@@ -47,7 +48,7 @@ pub async fn process(
     println!("Size (bytes): {}", program_file_size.to_string().green());
     println!("SHA256: {}", program_file_digest.green());
 
-    solana_cmd::deploy(&cluster, program_file.path(), program_kp_path)?;
+    solana_cmd::deploy(workspace, &cluster, program_file.path(), program_kp_path)?;
     solana_cmd::set_upgrade_authority(
         &cluster,
         &program_kp.pubkey(),

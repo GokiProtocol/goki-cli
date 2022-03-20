@@ -9,3 +9,4 @@ pub mod location;
 pub mod solana_cmd;
 pub mod subcommands;
 pub mod utils;
+pub mod workspace;

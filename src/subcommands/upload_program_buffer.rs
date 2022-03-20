@@ -9,22 +9,25 @@ use std::fs::File;
 use std::io::BufReader;
 use tempfile::NamedTempFile;
 
-use crate::location::fetch_program_file;
-use crate::solana_cmd;
+use crate::solana_cmd::{self, new_solana_cmd};
 use crate::utils::exec_command_with_output;
 use crate::utils::gen_new_keypair;
-use crate::utils::get_cluster_url;
-use crate::utils::get_deployer_kp_path;
 use crate::utils::print_header;
 use crate::utils::sha256_digest;
+use crate::{location::fetch_program_file, workspace::Workspace};
 
 #[derive(Serialize, Deserialize)]
 struct ProgramInfo {
     pub authority: String,
 }
 
-pub async fn process(cluster: Cluster, location: String, program_id: String) -> Result<()> {
-    let deployer_kp_path = get_deployer_kp_path(&cluster)?;
+pub async fn process(
+    workspace: &Workspace,
+    cluster: Cluster,
+    location: String,
+    program_id: String,
+) -> Result<()> {
+    let deployer_kp_path = workspace.get_deployer_kp_path_if_exists(&cluster)?;
 
     let mut program_file = NamedTempFile::new()?;
     fetch_program_file(&mut program_file, location.as_str()).await?;
@@ -48,17 +51,12 @@ pub async fn process(cluster: Cluster, location: String, program_id: String) -> 
     );
     println!("Make sure to send enough lamports to this address for the deploy.");
 
+    let cmd = &mut new_solana_cmd();
+    workspace.add_cluster_args(cmd, &cluster)?;
     let program_info_output = exec_command_with_output(
-        std::process::Command::new("solana")
-            .arg("--url")
-            .arg(get_cluster_url(&cluster)?)
-            .arg("--keypair")
-            .arg(&deployer_kp_path)
-            .arg("program")
-            .arg("show")
+        cmd.args(["program", "show"])
             .arg(&program_id)
-            .arg("--output")
-            .arg("json-compact"),
+            .args(["--output", "json-compact"]),
     )?;
     let program_info: ProgramInfo = serde_json::from_str(program_info_output.as_str())?;
 
@@ -68,11 +66,16 @@ pub async fn process(cluster: Cluster, location: String, program_id: String) -> 
 
     print_header("Writing buffer");
 
-    solana_cmd::write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
+    solana_cmd::write_buffer(
+        workspace,
+        &cluster,
+        program_file.path(),
+        buffer_kp_file.path(),
+    )?;
 
     print_header("Setting buffer authority");
 
-    solana_cmd::set_buffer_authority(&cluster, &buffer_key, &program_info.authority)?;
+    solana_cmd::set_buffer_authority(workspace, &cluster, &buffer_key, &program_info.authority)?;
 
     println!("Buffer upload complete.");
     println!("Buffer: {}", buffer_key.to_string().green());

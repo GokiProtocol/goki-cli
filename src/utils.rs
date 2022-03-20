@@ -11,7 +11,7 @@ use solana_sdk::signature::Signer;
 use std::{
     fs::File,
     io::{self, Read, Write},
-    path::{Path, PathBuf},
+    path::Path,
     process::{Command, Output, Stdio},
     string::String,
 };
@@ -99,23 +99,6 @@ pub fn sha256_digest<R: Read>(reader: &mut R) -> Result<(u64, String)> {
     let num_bytes = io::copy(reader, &mut hasher)?;
     let hash_bytes = hasher.finalize();
     Ok((num_bytes, HEXLOWER.encode(hash_bytes.as_ref())))
-}
-
-pub fn get_deployer_kp_path(cluster: &Cluster) -> Result<PathBuf> {
-    if !PathBuf::from(".goki/deployers/").exists() {
-        return Err(format_err!(
-            ".goki/deployers/ does not exist; you may need to run `goki init`"
-        ));
-    }
-    let deployer_kp_string = format!(".goki/deployers/{}.json", cluster);
-    let deployer_kp_path = &PathBuf::from(deployer_kp_string.as_str());
-    if !deployer_kp_path.exists() {
-        return Err(format_err!(
-            "Deployer not found at {:?}; you may need to run `goki init`",
-            deployer_kp_path
-        ));
-    }
-    Ok(deployer_kp_path.clone())
 }
 
 pub fn get_cluster_url(cluster: &Cluster) -> Result<String> {

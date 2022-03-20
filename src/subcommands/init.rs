@@ -6,10 +6,10 @@ use std::fs::File;
 use std::io::Write;
 use std::{fs, path::Path};
 
-use crate::config::Config;
 use crate::utils::{exec_command, gen_keypair_file, get_cluster_url};
+use crate::{config::Config, workspace::Workspace};
 
-pub fn process() -> Result<()> {
+pub fn process(workspace: &Workspace) -> Result<()> {
     if Config::discover()?.is_some() {
         println!("Goki.toml already exists in workspace")
     } else {
@@ -18,13 +18,12 @@ pub fn process() -> Result<()> {
         file.write_all(cfg.to_string().as_bytes())?;
     }
 
-    fs::create_dir_all(".goki/deployers/")?;
+    fs::create_dir_all(workspace.deployer_dir())?;
 
     let mut result: Vec<(Cluster, Pubkey)> = vec![];
 
     for cluster in [Cluster::Devnet, Cluster::Testnet, Cluster::Mainnet].iter() {
-        let path_string = format!(".goki/deployers/{}.json", cluster);
-        let keypair_path = Path::new(path_string.as_str());
+        let keypair_path = workspace.get_deployer_kp_path(cluster);
         let key = if keypair_path.exists() {
             let kp = read_keypair_file(keypair_path)
                 .map_err(|_| format_err!("could not read keypair"))?;
@@ -32,7 +31,7 @@ pub fn process() -> Result<()> {
             println!("Keypair at {} already exists: {}", cluster, pubkey);
             pubkey
         } else {
-            gen_keypair_file(keypair_path)?
+            gen_keypair_file(&keypair_path)?
         };
         result.push((cluster.clone(), key));
     }

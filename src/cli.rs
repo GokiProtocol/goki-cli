@@ -5,7 +5,7 @@ use anyhow::Result;
 use clap::Parser;
 use std::path::PathBuf;
 
-use crate::subcommands;
+use crate::{subcommands, workspace::Workspace};
 
 const LOCATION_HELP: &str =
     "The location of the Solana program binary. This can be in one of the following formats:
@@ -16,7 +16,7 @@ const LOCATION_HELP: &str =
 - Solana Program Registry artifact, for example `spr:QuarryProtocol/quarry_mine`
 ";
 
-#[derive(Debug, clap::Subcommand)]
+#[derive(Clone, Debug, clap::Subcommand)]
 pub enum SubCommand {
     /// Initializes a new Goki workspace.
     Init,
@@ -108,32 +108,42 @@ pub enum SubCommand {
     },
 }
 
-#[derive(Debug, clap::Parser)]
+#[derive(Clone, Debug, clap::Parser)]
 #[clap(about, version, author)]
 pub struct Opts {
+    /// Path to the workspace.
+    #[clap(short, long)]
+    #[clap(default_value = ".goki/")]
+    pub workspace_path: PathBuf,
     #[clap(subcommand)]
     pub command: SubCommand,
 }
 
-impl SubCommand {
-    /// Runs the subcommand.
-    pub async fn run(self) -> Result<()> {
-        match self {
+impl Opts {
+    pub async fn run(&self) -> Result<()> {
+        let workspace = Workspace {
+            path: self.workspace_path.clone(),
+        };
+        println!("Using workspace at {}", workspace.path.display());
+        match self.command.clone() {
             SubCommand::Init => {
-                subcommands::init::process()?;
+                subcommands::init::process(&workspace)?;
             }
             SubCommand::Show => {
-                subcommands::show::process()?;
+                subcommands::show::process(&workspace)?;
             }
             SubCommand::Airdrop { cluster, amount } => {
-                subcommands::airdrop::process(cluster, amount.as_str())?;
+                subcommands::airdrop::process(&workspace, cluster, amount.as_str())?;
             }
             SubCommand::UploadProgramBuffer {
                 cluster,
                 location,
                 program_id,
             } => {
-                subcommands::upload_program_buffer::process(cluster, location, program_id).await?;
+                subcommands::upload_program_buffer::process(
+                    &workspace, cluster, location, program_id,
+                )
+                .await?;
             }
             SubCommand::Deploy {
                 cluster,
@@ -141,8 +151,14 @@ impl SubCommand {
                 location,
                 program_kp,
             } => {
-                subcommands::deploy::process(cluster, upgrade_authority, location, &program_kp)
-                    .await?;
+                subcommands::deploy::process(
+                    &workspace,
+                    cluster,
+                    upgrade_authority,
+                    location,
+                    &program_kp,
+                )
+                .await?;
             }
             SubCommand::UpgradeLocal {
                 cluster,
@@ -151,6 +167,7 @@ impl SubCommand {
                 program_id,
             } => {
                 subcommands::upgrade_local::process(
+                    &workspace,
                     cluster,
                     upgrade_authority_keypair,
                     location,
@@ -162,7 +179,6 @@ impl SubCommand {
                 subcommands::pull::process(&location, out).await?;
             }
         };
-
         Ok(())
     }
 }
@@ -170,6 +186,7 @@ impl SubCommand {
 /// Runs the CLI.
 pub async fn run() -> Result<()> {
     let opts: Opts = Opts::parse();
-    opts.command.run().await?;
+    opts.run().await?;
+
     Ok(())
 }

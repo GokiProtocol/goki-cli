@@ -19,6 +19,10 @@ pub fn process(workspace: &Workspace) -> Result<()> {
                 .map_err(|_| format_err!("could not read keypair"))?;
             let pubkey = kp.pubkey();
             println!("{}: {}", cluster, pubkey);
+            println!(
+                "=> Solana Explorer Link: https://explorer.solana.com/address/{}?cluster={}",
+                pubkey, cluster
+            );
         } else {
             println!("{}: {}", cluster, "not found".red());
         };

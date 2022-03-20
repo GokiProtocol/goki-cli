@@ -1,16 +1,15 @@
 { pkgs }:
 pkgs.mkShell {
   buildInputs = with pkgs;
-    (pkgs.lib.optionals pkgs.stdenv.isLinux ([ libudev ])) ++ [
-      solana-cli
+    (pkgs.lib.optionals pkgs.stdenv.isLinux ([ udev ])) ++ [
+      solana-basic
       cargo-deps
-      cargo-watch
       cargo-udeps
       cargo-outdated
 
       # sdk
-      (yarn.override { nodejs = nodejs-14_x; })
-      nodejs-14_x
+      yarn
+      nodejs
       python3
 
       pkgconfig

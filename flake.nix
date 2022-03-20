@@ -12,28 +12,25 @@
   };
 
   outputs = { self, nixpkgs, saber-overlay, flake-utils, gitignore }:
-    flake-utils.lib.eachSystem [
-      "aarch64-darwin"
-      "x86_64-darwin"
-      "x86_64-linux"
-    ] (system:
+    flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; }
           // saber-overlay.packages.${system};
 
         osSpecificPackages = with pkgs;
           (lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks;
-            ([ IOKit Security CoreFoundation AppKit ]
-              ++ (lib.optionals stdenv.isAarch64 [ System ]))))
+          ([ IOKit Security CoreFoundation AppKit ]
+          ++ (lib.optionals stdenv.isAarch64 [ System ]))))
           ++ (lib.optionals stdenv.isLinux [ libudev ]);
 
         goki-cli = import ./default.nix {
-          inherit (pkgs) lib solana-cli rustPlatform pkgconfig openssl;
+          inherit (pkgs) lib solana-basic rustPlatform pkgconfig openssl;
           inherit osSpecificPackages;
           version = "0.1.4";
           src = gitignore.lib.gitignoreSource ./.;
         };
-      in {
+      in
+      {
         packages.goki-cli = goki-cli;
         defaultPackage = goki-cli;
         devShell = import ./shell.nix { inherit pkgs; };

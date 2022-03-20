@@ -1,3 +1,4 @@
+//! Calls to the `solana` CLI.
 use anchor_client::Cluster;
 use anyhow::Result;
 use solana_sdk::pubkey::Pubkey;

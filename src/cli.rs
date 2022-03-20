@@ -2,7 +2,6 @@
 
 use anchor_client::Cluster;
 use anyhow::Result;
-use clap::ArgSettings::NextLineHelp;
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -44,7 +43,7 @@ pub enum SubCommand {
 
         #[clap(short, long)]
         #[clap(help = LOCATION_HELP)]
-        #[clap(setting = NextLineHelp)]
+        #[clap(next_line_help = true)]
         location: String,
 
         /// The program being upgraded.
@@ -67,7 +66,7 @@ pub enum SubCommand {
 
         #[clap(short, long)]
         #[clap(help = LOCATION_HELP)]
-        #[clap(setting = NextLineHelp)]
+        #[clap(next_line_help = true)]
         location: String,
 
         /// The path to the keypair of the program being deployed.
@@ -98,7 +97,7 @@ pub enum SubCommand {
     /// Pulls a binary from a location.
     Pull {
         #[clap(help = LOCATION_HELP)]
-        #[clap(setting = NextLineHelp)]
+        #[clap(next_line_help = true)]
         location: String,
 
         /// Output path of the program binary.

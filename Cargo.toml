@@ -10,7 +10,7 @@ edition = "2021"
 keywords = ["solana", "goki", "cli"]
 
 [dependencies]
-anchor-client = "0.20.1"
+anchor-client = "0.24.2"
 anyhow = "1.0.42"
 clap = { version = "3.1.6", features = ["derive"] }
 colored = "2"

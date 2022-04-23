@@ -121,9 +121,7 @@ pub struct Opts {
 
 impl Opts {
     pub async fn run(&self) -> Result<()> {
-        let workspace = Workspace {
-            path: self.workspace_path.clone(),
-        };
+        let workspace = Workspace::load(&self.workspace_path)?;
         println!("Using workspace at {}", workspace.path.display());
         match self.command.clone() {
             SubCommand::Init => {

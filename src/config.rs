@@ -44,9 +44,10 @@ impl<T> std::ops::DerefMut for WithPath<T> {
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub rpc_endpoints: RPC,
+    pub upgrade_authority_keypair: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -104,13 +105,15 @@ impl Config {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct _Config {
+struct RawConfig {
     rpc_endpoints: Option<RPC>,
+    upgrade_authority_keypair: Option<String>,
 }
 
 impl ToString for Config {
     fn to_string(&self) -> String {
-        let cfg = _Config {
+        let cfg = RawConfig {
+            upgrade_authority_keypair: self.upgrade_authority_keypair.clone(),
             rpc_endpoints: Some(RPC {
                 ..self.rpc_endpoints.clone()
             }),
@@ -124,10 +127,11 @@ impl FromStr for Config {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let cfg: _Config = toml::from_str(s)
+        let cfg: RawConfig = toml::from_str(s)
             .map_err(|e| anyhow::format_err!("Unable to deserialize config: {}", e.to_string()))?;
         Ok(Config {
             rpc_endpoints: cfg.rpc_endpoints.unwrap_or_default(),
+            upgrade_authority_keypair: cfg.upgrade_authority_keypair,
         })
     }
 }

@@ -9,7 +9,6 @@ use std::path::Path;
 use std::str::FromStr;
 use tempfile::NamedTempFile;
 
-use crate::solana_cmd;
 use crate::utils::sha256_digest;
 use crate::{location::fetch_program_file, workspace::Workspace};
 
@@ -48,8 +47,8 @@ pub async fn process(
     println!("Size (bytes): {}", program_file_size.to_string().green());
     println!("SHA256: {}", program_file_digest.green());
 
-    solana_cmd::deploy(workspace, &cluster, program_file.path(), program_kp_path)?;
-    solana_cmd::set_upgrade_authority(
+    workspace.deploy(&cluster, program_file.path(), program_kp_path)?;
+    workspace.set_upgrade_authority(
         &cluster,
         &program_kp.pubkey(),
         &deployer_kp_path,

@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::BufReader;
 use tempfile::NamedTempFile;
 
-use crate::solana_cmd::{self, new_solana_cmd};
+use crate::solana_cmd::new_solana_cmd;
 use crate::utils::exec_command_with_output;
 use crate::utils::gen_new_keypair;
 use crate::utils::print_header;
@@ -66,16 +66,11 @@ pub async fn process(
 
     print_header("Writing buffer");
 
-    solana_cmd::write_buffer(
-        workspace,
-        &cluster,
-        program_file.path(),
-        buffer_kp_file.path(),
-    )?;
+    workspace.write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
 
     print_header("Setting buffer authority");
 
-    solana_cmd::set_buffer_authority(workspace, &cluster, &buffer_key, &program_info.authority)?;
+    workspace.set_buffer_authority(&cluster, &buffer_key, &program_info.authority)?;
 
     println!("Buffer upload complete.");
     println!("Buffer: {}", buffer_key.to_string().green());

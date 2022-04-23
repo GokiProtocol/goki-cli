@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::Write;
 use std::{fs, path::Path};
 
-use crate::utils::{exec_command, gen_keypair_file, get_cluster_url};
+use crate::utils::{exec_command, gen_keypair_file};
 use crate::{config::Config, workspace::Workspace};
 
 pub fn process(workspace: &Workspace) -> Result<()> {
@@ -41,6 +41,8 @@ pub fn process(workspace: &Workspace) -> Result<()> {
         println!("{}: {}", cluster, key);
     }
 
+    let workspace = workspace.reload()?;
+
     for (cluster, _key) in result.iter() {
         if cluster.clone() != Cluster::Mainnet {
             let path_string = format!(".goki/deployers/{}.json", cluster);
@@ -48,7 +50,7 @@ pub fn process(workspace: &Workspace) -> Result<()> {
             exec_command(
                 std::process::Command::new("solana")
                     .arg("--url")
-                    .arg(get_cluster_url(cluster)?)
+                    .arg(workspace.get_cluster_url(cluster)?)
                     .arg("--keypair")
                     .arg(keypair_path)
                     .arg("airdrop")

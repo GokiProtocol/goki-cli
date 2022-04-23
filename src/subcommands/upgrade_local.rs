@@ -7,7 +7,6 @@ use std::io::BufReader;
 use std::str::FromStr;
 use tempfile::NamedTempFile;
 
-use crate::solana_cmd;
 use crate::utils::{gen_new_keypair, sha256_digest};
 use crate::{location::fetch_program_file, workspace::Workspace};
 
@@ -47,24 +46,14 @@ pub async fn process(
             let mut buffer_kp_file = NamedTempFile::new()?;
             let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
 
-            solana_cmd::write_buffer(
-                workspace,
-                &cluster,
-                program_file.path(),
-                buffer_kp_file.path(),
-            )?;
-            solana_cmd::set_buffer_authority(
-                workspace,
-                &cluster,
-                &buffer_key,
-                upgrade_authority_kp.as_str(),
-            )?;
+            workspace.write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
+            workspace.set_buffer_authority(&cluster, &buffer_key, upgrade_authority_kp.as_str())?;
 
             buffer_key
         }
     };
 
-    solana_cmd::upgrade(&cluster, &upgrade_authority_kp, &buffer_key, &program_id)?;
+    workspace.upgrade(&cluster, &upgrade_authority_kp, &buffer_key, &program_id)?;
 
     Ok(())
 }

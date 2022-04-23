@@ -1,6 +1,5 @@
 //! Utility functions.
 
-use anchor_client::Cluster;
 use anyhow::{format_err, Result};
 use colored::*;
 use data_encoding::HEXLOWER;
@@ -15,8 +14,6 @@ use std::{
     process::{Command, Output, Stdio},
     string::String,
 };
-
-use crate::config::Config;
 
 /// Generates a keypair and writes it to the [Write].
 pub fn gen_new_keypair<W: Write>(write: &mut W) -> Result<Pubkey> {
@@ -99,16 +96,4 @@ pub fn sha256_digest<R: Read>(reader: &mut R) -> Result<(u64, String)> {
     let num_bytes = io::copy(reader, &mut hasher)?;
     let hash_bytes = hasher.finalize();
     Ok((num_bytes, HEXLOWER.encode(hash_bytes.as_ref())))
-}
-
-pub fn get_cluster_url(cluster: &Cluster) -> Result<String> {
-    let cfg = Config::discover()?.expect("Goki.toml not found; please run `goki init`");
-    Ok(match cluster {
-        Cluster::Debug => cfg.rpc_endpoints.debug.clone(),
-        Cluster::Testnet => cfg.rpc_endpoints.testnet.clone(),
-        Cluster::Mainnet => cfg.rpc_endpoints.mainnet.clone(),
-        Cluster::Devnet => cfg.rpc_endpoints.devnet.clone(),
-        Cluster::Localnet => cfg.rpc_endpoints.localnet.clone(),
-        _ => panic!("cluster type not supported"),
-    })
 }

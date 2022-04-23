@@ -1,6 +1,7 @@
 use anchor_client::Cluster;
 use anyhow::{format_err, Result};
 use std::{
+    ffi::OsStr,
     path::{Path, PathBuf},
     process::{Command, Output},
 };
@@ -32,7 +33,7 @@ impl Workspace {
 
     pub fn get_deployer_kp_path(&self, cluster: &Cluster) -> PathBuf {
         let deployer_dir = self.deployer_dir();
-        deployer_dir.as_path().join(format!("{}.json", cluster))
+        deployer_dir.join(format!("{}.json", cluster))
     }
 
     pub fn get_deployer_kp_path_if_exists(&self, cluster: &Cluster) -> Result<PathBuf> {
@@ -43,7 +44,7 @@ impl Workspace {
                 deployer_dir.display()
             ));
         }
-        let deployer_kp_path = deployer_dir.as_path().join(format!("{}.json", cluster));
+        let deployer_kp_path = deployer_dir.join(format!("{}.json", cluster));
         if !deployer_kp_path.exists() {
             return Err(format_err!(
                 "Deployer not found at {}; you may need to run `goki init`",
@@ -82,5 +83,62 @@ impl Workspace {
             Cluster::Localnet => &cfg.rpc_endpoints.localnet,
             _ => panic!("cluster type not supported"),
         })
+    }
+
+    /// New [CommandContext] using the configured upgrade authority keypair.
+    pub fn new_upgrader_context<'a, 'b>(&'a self, cluster: &'b Cluster) -> CommandContext<'a, 'b> {
+        let keypair_path = self.cfg.upgrade_authority_keypair.clone().unwrap();
+        CommandContext {
+            workspace: self,
+            cluster,
+            keypair_path,
+        }
+    }
+}
+
+pub struct CommandContext<'a, 'b> {
+    pub workspace: &'a Workspace,
+    pub cluster: &'b Cluster,
+    pub keypair_path: String,
+}
+
+impl<'a, 'b> CommandContext<'a, 'b> {
+    fn add_cluster_args(&self, command: &mut Command) -> Result<()> {
+        command
+            .args([
+                "--url",
+                self.workspace.get_cluster_url(self.cluster)?,
+                "--keypair",
+            ])
+            .arg(&self.keypair_path);
+        Ok(())
+    }
+
+    /// Executes a command.
+    pub fn exec_command<F>(&self, mut builder: F) -> Result<Output>
+    where
+        F: FnMut(&mut Command) -> Result<()>,
+    {
+        let cmd = &mut new_solana_cmd();
+        self.add_cluster_args(cmd)?;
+        builder(cmd)?;
+        exec_command(cmd)
+    }
+
+    /// Executes a command.
+    pub fn exec_args<S>(&self, args: &[S]) -> Result<Output>
+    where
+        S: AsRef<OsStr>,
+    {
+        let cmd = &mut new_solana_cmd();
+        self.add_cluster_args(cmd)?;
+        args.iter().for_each(|arg| {
+            cmd.arg(arg.as_ref());
+        });
+        exec_command(cmd)
+    }
+
+    pub fn get_deployer_kp_path(&self) -> PathBuf {
+        self.workspace.get_deployer_kp_path(self.cluster)
     }
 }

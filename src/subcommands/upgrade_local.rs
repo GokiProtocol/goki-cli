@@ -17,17 +17,20 @@ pub async fn process(
     location_or_buffer: String,
     program_id: String,
 ) -> Result<()> {
-    let upgrade_authority_kp: String = match upgrade_authority_kp_provided {
-        Some(kp_path) => kp_path,
-        None => {
-            if cluster == Cluster::Mainnet {
-                return Err(format_err!(
-                    "Must specify the --upgrade authority keypair on mainnet."
-                ));
+    let upgrade_authority_kp: String = match &upgrade_authority_kp_provided {
+        Some(kp_path) => kp_path.clone(),
+        None => match &workspace.cfg.upgrade_authority_keypair {
+            Some(kp_path) => kp_path.clone(),
+            None => {
+                if cluster == Cluster::Mainnet {
+                    return Err(format_err!(
+                        "Must specify the --upgrade_authority_keypair on mainnet."
+                    ));
+                }
+                let deployer_kp = workspace.get_deployer_kp_path_if_exists(&cluster)?;
+                deployer_kp.as_path().display().to_string()
             }
-            let deployer_kp = workspace.get_deployer_kp_path_if_exists(&cluster)?;
-            deployer_kp.display().to_string()
-        }
+        },
     };
 
     let buffer_key: Pubkey = match Pubkey::from_str(location_or_buffer.as_str()) {
@@ -47,7 +50,7 @@ pub async fn process(
             let buffer_key = gen_new_keypair(&mut buffer_kp_file)?;
 
             workspace.write_buffer(&cluster, program_file.path(), buffer_kp_file.path())?;
-            workspace.set_buffer_authority(&cluster, &buffer_key, upgrade_authority_kp.as_str())?;
+            workspace.set_buffer_authority(&cluster, &buffer_key, &upgrade_authority_kp)?;
 
             buffer_key
         }

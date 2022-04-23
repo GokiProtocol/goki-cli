@@ -34,6 +34,21 @@ pub enum SubCommand {
         #[clap(default_value = "1")]
         amount: String,
     },
+    /// Requests an airdrop of SOL from the Solana network.
+    Transfer {
+        /// Cluster to transfer tokens on.
+        #[clap(short, long)]
+        #[clap(default_value = "devnet")]
+        cluster: Cluster,
+
+        /// Who to transfer to. Defaults to the deployer of the network.
+        #[clap(default_value = "deployer")]
+        to: String,
+
+        /// Amount to transfer in SOL.
+        #[clap(default_value = "1")]
+        amount: String,
+    },
     /// Uploads a Solana program buffer.
     UploadProgramBuffer {
         /// Cluster to deploy to.
@@ -132,6 +147,13 @@ impl Opts {
             }
             SubCommand::Airdrop { cluster, amount } => {
                 subcommands::airdrop::process(&workspace, cluster, amount.as_str())?;
+            }
+            SubCommand::Transfer {
+                cluster,
+                to,
+                amount,
+            } => {
+                subcommands::transfer::process(&workspace, cluster, &to, &amount)?;
             }
             SubCommand::UploadProgramBuffer {
                 cluster,

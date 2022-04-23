@@ -85,53 +85,61 @@ impl Workspace {
         })
     }
 
-    /// New [CommandContext] using the configured upgrade authority keypair.
-    pub fn new_upgrader_context<'a, 'b>(&'a self, cluster: &'b Cluster) -> CommandContext<'a, 'b> {
-        let keypair_path = self.cfg.upgrade_authority_keypair.clone().unwrap();
-        CommandContext {
+    /// The upgrader.
+    pub fn get_upgrader_wallet(&self) -> Result<String> {
+        self.cfg
+            .upgrade_authority_keypair
+            .clone()
+            .ok_or_else(|| format_err!("upgrade_authority_keypair not found in Goki.toml"))
+    }
+
+    /// New [CommandContext] using the specified cluster.
+    pub fn new_cluster_context<'a, 'b>(
+        &'a self,
+        cluster: &'b Cluster,
+    ) -> Result<CommandContext<'a, 'b>> {
+        Ok(CommandContext {
             workspace: self,
             cluster,
-            keypair_path,
-        }
+        })
     }
 }
 
 pub struct CommandContext<'a, 'b> {
     pub workspace: &'a Workspace,
     pub cluster: &'b Cluster,
-    pub keypair_path: String,
 }
 
 impl<'a, 'b> CommandContext<'a, 'b> {
-    fn add_cluster_args(&self, command: &mut Command) -> Result<()> {
+    fn add_cluster_args(&self, command: &mut Command, wallet: &str) -> Result<()> {
         command
             .args([
                 "--url",
                 self.workspace.get_cluster_url(self.cluster)?,
                 "--keypair",
             ])
-            .arg(&self.keypair_path);
+            .arg(wallet);
         Ok(())
     }
 
     /// Executes a command.
-    pub fn exec_command<F>(&self, mut builder: F) -> Result<Output>
+    pub fn exec_command<F>(&self, mut builder: F, wallet: &str) -> Result<Output>
     where
         F: FnMut(&mut Command) -> Result<()>,
     {
         let cmd = &mut new_solana_cmd();
-        self.add_cluster_args(cmd)?;
+        self.add_cluster_args(cmd, wallet)?;
         builder(cmd)?;
         exec_command(cmd)
     }
 
     /// Executes a command.
-    pub fn exec_args<S>(&self, args: &[S]) -> Result<Output>
+    pub fn exec_args<S>(&self, args: &[S], wallet: &str) -> Result<Output>
     where
         S: AsRef<OsStr>,
     {
         let cmd = &mut new_solana_cmd();
-        self.add_cluster_args(cmd)?;
+        self.add_cluster_args(cmd, wallet)?;
         args.iter().for_each(|arg| {
             cmd.arg(arg.as_ref());
         });
@@ -140,5 +148,14 @@ impl<'a, 'b> CommandContext<'a, 'b> {
 
     pub fn get_deployer_kp_path(&self) -> PathBuf {
         self.workspace.get_deployer_kp_path(self.cluster)
+    }
+
+    pub fn parse_wallet_alias(&self, alias: &str) -> Result<String> {
+        let result = match alias {
+            "deployer" => Ok(self.get_deployer_kp_path().display().to_string()),
+            "upgrader" => self.workspace.get_upgrader_wallet(),
+            _ => Ok(alias.to_string()),
+        };
+        result.map_err(|err| format_err!("could not parse alias {}: {}", alias, err))
     }
 }

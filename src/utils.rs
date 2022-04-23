@@ -57,7 +57,16 @@ fn rem_first_and_last(value: &str) -> &str {
 }
 
 fn fmt_command(command: &Command) -> String {
-    let cmd_str_raw = format!("{:?}", command).split("\" \"").join(" ");
+    let cmd_str_raw = format!("{:?}", command)
+        .split("\" \"")
+        .map(|s| {
+            if s.contains('?') || s.contains('!') {
+                format!("'{}'", s.replace('\'', "\\'"))
+            } else {
+                s.to_string()
+            }
+        })
+        .join(" ");
     rem_first_and_last(&cmd_str_raw).to_string()
 }
 

@@ -1,5 +1,12 @@
-{ lib, version, src, rustPlatform, solana-cli, osSpecificPackages, pkgconfig
-, openssl }:
+{ lib
+, version
+, src
+, rustPlatform
+, solana-basic
+, osSpecificPackages
+, pkgconfig
+, openssl
+}:
 
 rustPlatform.buildRustPackage rec {
   pname = "goki-cli";
@@ -10,7 +17,7 @@ rustPlatform.buildRustPackage rec {
   strictDeps = true;
 
   nativeBuildInputs = [ pkgconfig ];
-  buildInputs = osSpecificPackages ++ [ openssl solana-cli ];
+  buildInputs = osSpecificPackages ++ [ openssl solana-basic ];
 
   meta = with lib; {
     homepage = "https://goki.so";

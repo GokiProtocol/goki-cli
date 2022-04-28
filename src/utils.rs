@@ -82,7 +82,10 @@ pub fn exec_command(command: &mut Command) -> Result<Output> {
     print_command(command);
     let exit = exec_command_unhandled(command)?;
     if !exit.status.success() {
-        std::process::exit(exit.status.code().unwrap_or(1));
+        return Err(format_err!(
+            "Command returned with exit code {}",
+            exit.status.code().unwrap_or_default()
+        ));
     }
     Ok(exit)
 }

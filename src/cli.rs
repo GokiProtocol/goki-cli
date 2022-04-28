@@ -22,6 +22,13 @@ pub enum SubCommand {
     Init,
     /// Shows information about the Goki workspace.
     Show,
+    /// Shows the balance of the deployer.
+    Balance {
+        /// Cluster.
+        #[clap(short, long)]
+        #[clap(default_value = "devnet")]
+        cluster: Cluster,
+    },
     /// Requests an airdrop of SOL from the Solana network.
     Airdrop {
         /// Cluster to request from.
@@ -172,11 +179,14 @@ impl Opts {
             } => {
                 subcommands::airdrop::process(
                     &workspace,
-                    cluster,
+                    &cluster,
                     amount.as_str(),
                     iterations,
                     interval,
                 )?;
+            }
+            SubCommand::Balance { cluster } => {
+                subcommands::balance::process(&workspace, &cluster)?;
             }
             SubCommand::Transfer {
                 cluster,

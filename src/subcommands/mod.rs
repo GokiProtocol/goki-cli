@@ -1,4 +1,5 @@
 pub mod airdrop;
+pub mod balance;
 pub mod deploy;
 pub mod init;
 pub mod pull;

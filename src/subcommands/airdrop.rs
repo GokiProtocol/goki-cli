@@ -6,22 +6,28 @@ use crate::workspace::Workspace;
 
 pub fn process(
     workspace: &Workspace,
-    cluster: Cluster,
+    cluster: &Cluster,
     amount: &str,
     iterations: u32,
     interval: u64,
 ) -> Result<()> {
-    if cluster == Cluster::Mainnet {
+    if *cluster == Cluster::Mainnet {
         return Err(format_err!("cannot request an airdrop from mainnet"));
     }
 
-    for _ in 0..iterations {
-        workspace.exec_deployer_command(&cluster, |cmd| {
-            cmd.arg("airdrop").arg(amount);
-            Ok(())
-        })?;
+    let ctx = workspace.new_cluster_context(cluster)?;
+    let deployer = ctx.parse_wallet_alias("deployer")?;
 
-        thread::sleep(Duration::from_millis(interval));
+    for i in 0..iterations {
+        match ctx.exec_args(&["airdrop", amount], &deployer) {
+            Ok(_) => {}
+            Err(err) => {
+                println!("Error performing airdrop: {}", err);
+            }
+        }
+        if i != iterations - 1 {
+            thread::sleep(Duration::from_millis(interval));
+        }
     }
 
     Ok(())

@@ -9,14 +9,22 @@ use std::{fs, path::Path};
 use crate::utils::{exec_command, gen_keypair_file};
 use crate::{config::Config, workspace::Workspace};
 
-pub fn process(workspace: &Workspace) -> Result<()> {
-    if Config::discover()?.is_some() {
-        println!("Goki.toml already exists in workspace")
+pub fn process(path: &Path) -> Result<()> {
+    let maybe_cfg = Config::discover()?;
+    let cfg = if let Some(cfg) = maybe_cfg {
+        println!("Goki.toml already exists in workspace");
+        cfg.into_inner()
     } else {
         let cfg = Config::default();
         let mut file = File::create("Goki.toml")?;
         file.write_all(cfg.to_string().as_bytes())?;
-    }
+        cfg
+    };
+
+    let workspace = &Workspace {
+        path: path.to_path_buf(),
+        cfg,
+    };
 
     fs::create_dir_all(workspace.deployer_dir())?;
 

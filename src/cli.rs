@@ -16,7 +16,7 @@ const LOCATION_HELP: &str =
 - Solana Program Registry artifact, for example `spr:QuarryProtocol/quarry_mine`
 ";
 
-#[derive(Clone, Debug, clap::Subcommand)]
+#[derive(Clone, Debug, clap::Subcommand, PartialEq, Eq)]
 pub enum SubCommand {
     /// Initializes a new Goki workspace.
     Init,
@@ -33,6 +33,16 @@ pub enum SubCommand {
         /// Airdrop request amount in SOL.
         #[clap(default_value = "1")]
         amount: String,
+
+        /// Number of times to request an airdrop.
+        #[clap(short, long)]
+        #[clap(default_value = "1")]
+        iterations: u32,
+
+        /// Interval between airdrop requests, in milliseconds.
+        #[clap(short, long)]
+        #[clap(default_value = "5000")]
+        interval: u64,
     },
     /// Transfers SOL from a wallet.
     Transfer {
@@ -143,17 +153,30 @@ pub struct Opts {
 
 impl Opts {
     pub async fn run(&self) -> Result<()> {
+        if self.command.clone() == SubCommand::Init {
+            return subcommands::init::process(&self.workspace_path);
+        }
+
         let workspace = Workspace::load(&self.workspace_path)?;
         println!("Using workspace at {}", workspace.path.display());
         match self.command.clone() {
-            SubCommand::Init => {
-                subcommands::init::process(&workspace)?;
-            }
+            SubCommand::Init => {}
             SubCommand::Show => {
                 subcommands::show::process(&workspace)?;
             }
-            SubCommand::Airdrop { cluster, amount } => {
-                subcommands::airdrop::process(&workspace, cluster, amount.as_str())?;
+            SubCommand::Airdrop {
+                cluster,
+                amount,
+                iterations,
+                interval,
+            } => {
+                subcommands::airdrop::process(
+                    &workspace,
+                    cluster,
+                    amount.as_str(),
+                    iterations,
+                    interval,
+                )?;
             }
             SubCommand::Transfer {
                 cluster,

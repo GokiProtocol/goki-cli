@@ -1,11 +1,13 @@
-{ pkgs }:
+{ pkgs ? <nixpkgs> }:
 pkgs.mkShell {
   buildInputs = with pkgs;
     (pkgs.lib.optionals pkgs.stdenv.isLinux ([ udev ])) ++ [
-      solana-basic
+      # solana-basic
       cargo-deps
       cargo-udeps
       cargo-outdated
+
+      goki-cli
 
       # sdk
       yarn

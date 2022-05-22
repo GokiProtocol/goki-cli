@@ -14,8 +14,7 @@ in
     version = "0.2.3";
     src =
       (prev.nix-gitignore.gitignoreSource [
-        "*.nix"
-        ./.gitignore
+        "*.nix\n"
       ] ./.);
   };
 }

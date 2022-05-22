@@ -1,4 +1,6 @@
-target/
+.direnv/
 .goki/
+
 Goki.toml
+target/
 test-ledger

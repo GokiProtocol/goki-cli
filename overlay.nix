@@ -12,9 +12,20 @@ in
     solana-basic = prev.solana.solana-basic;
     inherit osSpecificPackages;
     version = "0.2.3";
-    src =
-      (prev.nix-gitignore.gitignoreSource [
-        "*.nix\n"
-      ] ./.);
+    src = builtins.path
+      {
+        path = ./.;
+        name = "goki-cli";
+        filter = path: type:
+          let
+            includeFiles = [
+              "Cargo.toml"
+              "Cargo.lock"
+              "src"
+            ];
+          in
+          # Only include the above files in the generated derivation
+          (prev.lib.lists.any (p: (prev.lib.hasInfix p path)) includeFiles);
+      };
   };
 }

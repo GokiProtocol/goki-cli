@@ -10,10 +10,13 @@
   outputs = { self, nixpkgs, saber-overlay, flake-utils }:
     let
       overlay = import ./overlay.nix;
+      defaultOverlay = final: prev:
+        (nixpkgs.lib.composeExtensions saber-overlay.overlay overlay) final prev;
     in
     {
       overlays = {
-        default = overlay;
+        default = defaultOverlay;
+        basic = overlay;
       };
     } // flake-utils.lib.eachDefaultSystem (system:
       let

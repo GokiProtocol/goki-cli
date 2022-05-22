@@ -26,7 +26,7 @@
         goki-cli = import ./default.nix {
           inherit (pkgs) lib solana-basic rustPlatform pkgconfig openssl;
           inherit osSpecificPackages;
-          version = "0.2.2";
+          version = "0.2.3";
           src = gitignore.lib.gitignoreSource ./.;
         };
       in

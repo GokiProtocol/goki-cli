@@ -1,6 +1,6 @@
 [package]
 name = "goki"
-version = "0.2.2"
+version = "0.2.3"
 description = "Goki command line interface."
 homepage = "https://goki.so"
 repository = "https://github.com/GokiProtocol/goki-cli"

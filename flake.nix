@@ -8,9 +8,15 @@
   };
 
   outputs = { self, nixpkgs, saber-overlay, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+    let
+      overlay = import ./overlay.nix;
+    in
+    {
+      overlays = {
+        default = overlay;
+      };
+    } // flake-utils.lib.eachDefaultSystem (system:
       let
-        overlay = import ./overlay.nix;
         pkgs = import nixpkgs
           {
             inherit system;
@@ -27,9 +33,6 @@
         };
         devShells = {
           default = import ./shell.nix { inherit pkgs; };
-        };
-        overlays = {
-          default = overlay;
         };
       });
 }

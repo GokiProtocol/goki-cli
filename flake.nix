@@ -12,7 +12,7 @@
   };
 
   outputs = { self, nixpkgs, saber-overlay, flake-utils, gitignore }:
-    flake-utils.lib.eachSystem saber-overlay.lib.supportedSystems (system:
+    flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; }
           // saber-overlay.packages.${system};

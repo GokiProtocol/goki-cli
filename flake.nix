@@ -28,5 +28,8 @@
         devShells = {
           default = import ./shell.nix { inherit pkgs; };
         };
+        overlays = {
+          default = overlay;
+        };
       });
 }

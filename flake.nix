@@ -24,7 +24,7 @@
           {
             inherit system;
             overlays = [
-              saber-overlay.overlay
+              saber-overlay.overlays.default
               overlay
             ];
           };

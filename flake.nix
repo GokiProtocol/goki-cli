@@ -11,7 +11,7 @@
     let
       overlay = import ./overlay.nix;
       defaultOverlay = final: prev:
-        (nixpkgs.lib.composeExtensions saber-overlay.overlay overlay) final prev;
+        (nixpkgs.lib.composeExtensions saber-overlay.overlays.default overlay) final prev;
     in
     {
       overlays = {

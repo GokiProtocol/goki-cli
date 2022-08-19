@@ -11,7 +11,7 @@ keywords = ["solana", "goki", "cli"]
 
 [dependencies]
 anchor-client = "0.24.2"
-anyhow = "1.0.42"
+anyhow = "1.0.62"
 clap = { version = "3.1.6", features = ["derive"] }
 colored = "2"
 data-encoding = "2.3.2"

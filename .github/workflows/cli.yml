@@ -26,7 +26,7 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: rustfmt, clippy
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@v1
+        uses: Swatinem/rust-cache@v2
       - run: cargo fmt -- --check
       - run: cargo clippy -- --deny=warnings
       - run: cargo build
